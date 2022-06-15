@@ -55,7 +55,7 @@ def save_valid_id_and_identification_offset(ards_data_id_list, thread_number=0):
         valid_id_list.append({'icu_stay_id': ards_data_id, 'identification_offset': identification_offset})
     df = pd.DataFrame(valid_id_list, columns=['icu_stay_id', 'identification_offset'])
 
-    df.to_csv(os.path.join('/Users/sweeney/WorkSpace/WorkCode/aids/process_data/base_data',
+    df.to_csv(os.path.join('/process_data/dataset/base_data',
                            'valid_id_%d.csv' % thread_number))
 
     sql_connector.close()

@@ -52,4 +52,4 @@ def combine_csvs(data_path=None, data_name=None):
 
 
 if __name__ == '__main__':
-    combine_csvs('/Users/sweeney/WorkSpace/WorkCode/aids/process_data/ards_data')
+    combine_csvs('/process_data/dataset/ards_data')

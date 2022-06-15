@@ -6,7 +6,7 @@ import datetime
 import os
 import threading
 
-base_ards_data_path = '/Users/sweeney/WorkSpace/WorkCode/aids/process_data/base_data/valid_id.csv'
+base_ards_data_path = '/process_data/dataset/base_data/valid_id.csv'
 
 
 def get_ards_data(mult_thread=True):
@@ -102,7 +102,7 @@ def save_ards_data(base_ards_data, thread_number=0):
     # print(ards_data.columns)
     # print(ards_data.iloc[:1].to_json())
     # print(ards_data)
-    ards_data.to_csv(os.path.join('/Users/sweeney/WorkSpace/WorkCode/aids/process_data/ards_data',
+    ards_data.to_csv(os.path.join('/process_data/dataset/ards_data',
                                   'ards_data_%d.csv' % thread_number))
     sql_connector.close()
 
