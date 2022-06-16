@@ -279,7 +279,7 @@ class PostgresSqlConnector:
 
     def get_vitalAperiodic_feature(self, icu_stay_id, start_offset, end_offset):
         query = """
-                select observationoffset as time_offset, noninvasiveSystolic, noninvasivediastolic, noninvasivemean
+                select observationoffset as time_offset, noninvasivesystolic, noninvasivediastolic, noninvasivemean
                 from vitalaperiodic
                 where observationoffset >= {start_offset}
                 and observationoffset <= {end_offset}
