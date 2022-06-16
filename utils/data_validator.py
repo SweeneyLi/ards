@@ -1,10 +1,17 @@
-from init_config import dynamic_range_dict
+from utils.init_config import dynamic_range_dict
 
-__all__ = ['SectionValidator', 'remove_outliers_for_continuous_features']
+__all__ = ['SectionValidator']
 
 
 class BaseSectionValidator:
     def __init__(self, min_value=None, min_open=None, max_value=None, max_open=None):
+        if min_value is None:
+            self.min_value = None
+            self.min_open = None
+            self.max_value = None
+            self.max_open = None
+            return
+
         self.min_value = float(min_value) if min_value.lower() != '-inf' else '-inf'
         self.min_open = min_open
         self.max_value = float(max_value)
@@ -43,6 +50,8 @@ class SectionValidator:
     def is_valid(name, value):
         if not SectionValidator.section_validator_dict.get(name, None):
             # print(name, dynamic_range_dict.keys())
+            if name not in dynamic_range_dict.keys():
+                print(name, dynamic_range_dict.keys())
             assert name in dynamic_range_dict.keys()
             SectionValidator.section_validator_dict[name] = SectionValidator.base_section_validator_constructor(
                 dynamic_range_dict[name])
@@ -54,14 +63,3 @@ assert SectionValidator.is_valid('PEEP filter', 5) is True
 assert SectionValidator.is_valid('PEEP filter', 10) is True
 assert SectionValidator.is_valid('PEEP filter', 25) is True
 assert SectionValidator.is_valid('PEEP filter', 26) is False
-
-
-def remove_outliers_for_continuous_features(df):
-    delete_index_list = []
-    for index, row in df.iterrows():
-        name = row['label']
-        value = row['value']
-        if not SectionValidator.is_valid(name, value):
-            delete_index_list.append(index)
-    df.drop(delete_index_list, inplace=True)
-    return df
