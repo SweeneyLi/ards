@@ -1,9 +1,24 @@
 import os
 import pandas as pd
-from data_validator import SectionValidator
+from utils.data_validator import SectionValidator
 
-__all__ = ['log_time', 'combine_csvs', 'generate_pf_list', 'get_continuous_offset',
-           'reformat_data_from_dataframe_to_dict']
+__all__ = ['log_time', 'is_number', 'combine_csvs', 'generate_pf_list', 'get_continuous_offset',
+           'reformat_data_from_dataframe_to_dict_and_remove_outlier', 'reformat_feature_from_column_to_line']
+
+
+def is_number(s):
+    try:  # 如果能运行float(s)语句，返回True（字符串s是浮点数）
+        float(s)
+        return True
+    except ValueError:  # ValueError为Python的一种标准异常，表示"传入无效的参数"
+        pass  # 如果引发了ValueError这种异常，不做任何事情（pass：不做任何事情，一般用做占位语句）
+    try:
+        import unicodedata  # 处理ASCii码的包
+        unicodedata.numeric(s)  # 把一个表示数字的字符串转换为浮点数返回的函数
+        return True
+    except (TypeError, ValueError):
+        pass
+    return False
 
 
 def log_time(func):
@@ -53,24 +68,30 @@ def combine_csvs(data_path=None, data_name=None):
     df.to_csv(os.path.join(data_path, data_name))
 
 
-def reformat_data_from_dataframe_to_dict(df):
+def reformat_data_from_dataframe_to_dict_and_remove_outlier(df):
     result = {}
     # change to dict
     for index, row in df.iterrows():
         name = row['label']
         value = row['value']
-        offset = row['offset']
+        offset = row['time_offset']
+
+        if not is_number(value):
+            print('name: %s, value:%s, offset:%s' % (name, value, offset))
+            continue
+        value = float(value)
 
         if result.get(name, None) is None:
             result[name] = {}
-        result[name][offset] = value
+        if SectionValidator.is_valid(name, value):
+            result[name][offset] = value
 
     return result
 
 
-def generate_pf_list(pao2_list, fio2_list):
-    pao2_list = sorted(pao2_list, key=lambda x: x[0])
-    fio2_list = sorted(fio2_list, key=lambda x: x[0])
+def generate_pf_list(pao2_dict, fio2_dict):
+    pao2_list = sorted(pao2_dict.items(), key=lambda x: x[0])
+    fio2_list = sorted(fio2_dict.items(), key=lambda x: x[0])
 
     pf_list = []
     if len(pao2_list) < 2 or len(fio2_list) < 2:
@@ -99,10 +120,11 @@ def generate_pf_list(pao2_list, fio2_list):
     return pf_list
 
 
-
 assert generate_pf_list(
-    [[0, 300], [1, 300], [10, 200], [15, 100]],
-    [[5, 10], [20, 5]]
+    {0: 300, 1: 300, 10: 200, 15: 100},
+    {5: 10, 20: 5}
+    # [[0, 300], [1, 300], [10, 200], [15, 100]],
+    # [[5, 10], [20, 5]]
 ) == [[5, 30.0], [10, 20.0], [15, 10.0], [20, 20.0]]
 
 
@@ -143,6 +165,20 @@ assert get_continuous_offset(8, 'PEEP', [
 assert get_continuous_offset(8, 'PEEP', [
     [-1, 2], [10, 8], [11, 8], [19, 10], [20, 3]
 ]) == 19
+
+
+def reformat_feature_from_column_to_line(data):
+    label_list = list(data.columns).copy()
+    label_list.remove('time_offset')
+
+    new_data = pd.DataFrame(columns=['time_offset', 'label', 'value'])
+    for index, row in data.iterrows():
+        offset = row['time_offset']
+        for l in label_list:
+            if row[l]:
+                new_data = new_data.append({'time_offset': offset, 'label': l, 'value': row[l]}, ignore_index=True)
+    return new_data
+
 
 if __name__ == '__main__':
     combine_csvs('../output/')

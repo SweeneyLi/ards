@@ -1,7 +1,7 @@
 import pandas as pd
 import psycopg2
-from init_config import db_config
-from data_validator import remove_outliers_for_continuous_features
+from utils.init_config import db_config
+from utils.common import reformat_feature_from_column_to_line
 
 __all__ = ['PostgresSqlConnector']
 
@@ -30,7 +30,7 @@ class PostgresSqlConnector:
 
     def get_pao2_fio2_peep_info_by_icu_stay_id(self, icu_stay_id):
         query = """
-            select le.labresultoffset as offset,
+            select le.labresultoffset as time_offset,
                    le.labname         as label,
                    le.labresult       as value
             from lab as le
@@ -40,8 +40,8 @@ class PostgresSqlConnector:
               and le.labresult is not null
               and le.labresult > 0
             UNION
-            select res.respchartoffset                 as resultoffset,
-                   res.respchartvaluelabel             as name,
+            select res.respchartoffset                 as time_offset,
+                   res.respchartvaluelabel             as label,
                    CAST(res.respchartvalue as DECIMAL) as value
             from respiratorycharting as res
             where res.patientunitstayid = {icu_stay_id}
@@ -52,7 +52,34 @@ class PostgresSqlConnector:
 
             """.format(icu_stay_id=icu_stay_id)
 
-        return remove_outliers_for_continuous_features(self.get_data_by_query(query))
+        return self.get_data_by_query(query)
+
+    def get_pao2_fio2_peep_info_by_icu_stay_id_and_offset(self, icu_stay_id, offset):
+        query = """
+            select le.labresultoffset as time_offset,
+                   le.labname         as label,
+                   le.labresult       as value
+            from lab as le
+            where le.patientunitstayid = {icu_stay_id} and
+                    le.labresultoffset >= {offset}
+              and le.labname in
+                  ('paO2', 'FiO2', 'PEEP')
+              and le.labresult is not null
+              and le.labresult > 0
+            UNION
+            select res.respchartoffset                 as time_offset,
+                   res.respchartvaluelabel             as name,
+                   CAST(res.respchartvalue as DECIMAL) as value
+            from respiratorycharting as res
+            where res.patientunitstayid = {icu_stay_id}
+              and res.respchartvaluelabel in
+                  ('FiO2', 'PEEP')
+              and res.respchartvalue is not null
+              and position('%' in res.respchartvalue) = 0;
+
+            """.format(icu_stay_id=icu_stay_id, offset=offset)
+
+        return self.get_data_by_query(query)
 
     # todo::failed
     def set_ards_data_valid_tag(self, icu_stay_id, valid_tag=1):
@@ -74,14 +101,11 @@ class PostgresSqlConnector:
         # cur.close()
         # con.close()
 
-    def get_feature(self, icu_stay_id):
-
-        return pd.concat((self.get_static_feature(icu_stay_id), self.get_indicator_feature(icu_stay_id)),
-                         axis=1)
-
     def get_static_feature(self, icu_stay_id):
         return pd.concat(
-            (self.get_patient_table_feature(icu_stay_id), self.get_apachePatientResult_table_feature(icu_stay_id)),
+            [self.get_patient_table_feature(icu_stay_id),
+             self.get_apachePatientResult_table_feature(icu_stay_id),
+             self.get_indicator_feature(icu_stay_id)],
             axis=1)
 
     def get_patient_table_feature(self, icu_stay_id):
@@ -110,64 +134,162 @@ class PostgresSqlConnector:
 
     def get_indicator_feature(self, icu_stay_id):
         query = """
-                            select vasopressor_indicator,
-                            dobutamine_indicator,
-                            dopamine_indicator,
-                            epinephrine_indicator,
-                            norepinephrine_indicator,
-                            phenylephrine_indicator,
-                            vasopressin_indicator,
-                            warfarin_indicator,
-                            heparin_indicator,
-                            milrinone_indicator
-                            from (select patientunitstayid,
-                            max(case when drugname like 'vasopressor%' then 1 else 0 end)    as vasopressor_indicator,
-                            max(case when drugname like 'dobutamine%' then 1 else 0 end)     as dobutamine_indicator,
-                            max(case when drugname like 'dopamine%' then 1 else 0 end)       as dopamine_indicator,
-                            max(case when drugname like 'epinephrine%' then 1 else 0 end)    as epinephrine_indicator,
-                            max(case when drugname like 'norepinephrine%' then 1 else 0 end) as norepinephrine_indicator,
-                            max(case when drugname like 'phenylephrine%' then 1 else 0 end)  as phenylephrine_indicator,
-                            max(case when drugname like 'vasopressin%' then 1 else 0 end)    as vasopressin_indicator,
-                            max(case when drugname like 'warfarin%' then 1 else 0 end)       as warfarin_indicator,
-                            max(case when drugname like 'heparin%' then 1 else 0 end)        as heparin_indicator,
-                            max(case when drugname like 'milrinone%' then 1 else 0 end)      as milrinone_indicator
-                            from infusiondrug
-                            where infusionoffset <= 1440
-                            and (
-                              drugname like 'vasopressin%'
-                            or drugname like '%dobutamine%'
-                            or drugname like '%dopamine%'
-                            or drugname like '%epinephrine%'
-                            or drugname like '%norepinephrine%'
-                            or drugname like '%phenylephrine%'
-                            or drugname like '%vasopressin%'
-                            or drugname like '%warfarin%'
-                            or drugname like '%heparin%'
-                            or drugname like '%milrinone%'
-                            )
-                            group by patientunitstayid) as drug_indicator
-                            where patientunitstayid = {icu_stay_id};
+                select vasopressor_indicator,
+                dobutamine_indicator,
+                dopamine_indicator,
+                epinephrine_indicator,
+                norepinephrine_indicator,
+                phenylephrine_indicator,
+                vasopressin_indicator,
+                warfarin_indicator,
+                heparin_indicator,
+                milrinone_indicator
+                from (select patientunitstayid,
+                max(case when drugname like 'vasopressor%' then 1 else 0 end)    as vasopressor_indicator,
+                max(case when drugname like 'dobutamine%' then 1 else 0 end)     as dobutamine_indicator,
+                max(case when drugname like 'dopamine%' then 1 else 0 end)       as dopamine_indicator,
+                max(case when drugname like 'epinephrine%' then 1 else 0 end)    as epinephrine_indicator,
+                max(case when drugname like 'norepinephrine%' then 1 else 0 end) as norepinephrine_indicator,
+                max(case when drugname like 'phenylephrine%' then 1 else 0 end)  as phenylephrine_indicator,
+                max(case when drugname like 'vasopressin%' then 1 else 0 end)    as vasopressin_indicator,
+                max(case when drugname like 'warfarin%' then 1 else 0 end)       as warfarin_indicator,
+                max(case when drugname like 'heparin%' then 1 else 0 end)        as heparin_indicator,
+                max(case when drugname like 'milrinone%' then 1 else 0 end)      as milrinone_indicator
+                from infusiondrug
+                where infusionoffset <= 1440
+                and (
+                  drugname like 'vasopressin%'
+                or drugname like '%dobutamine%'
+                or drugname like '%dopamine%'
+                or drugname like '%epinephrine%'
+                or drugname like '%norepinephrine%'
+                or drugname like '%phenylephrine%'
+                or drugname like '%vasopressin%'
+                or drugname like '%warfarin%'
+                or drugname like '%heparin%'
+                or drugname like '%milrinone%'
+                )
+                group by patientunitstayid) as drug_indicator
+                where patientunitstayid = {icu_stay_id};
                     """.format(icu_stay_id=icu_stay_id)
         data = self.get_data_by_query(query)
         if data.shape[0] == 0:
             data.loc[0] = [0 for i in range(10)]
         return data
 
-    def get_dynamic_result(self, icu_stay_id):
-        return remove_outliers_for_continuous_features([])
+    def get_dynamic_feature(self, icu_stay_id, start_offset, end_offset):
+        data = [self.get_lab_feature(icu_stay_id, start_offset, end_offset),
+                self.get_nurseCharting_feature(icu_stay_id, start_offset, end_offset),
+                self.get_respiratoryCharting_feature(icu_stay_id, start_offset, end_offset),
+                self.get_vitalAperiodic_feature(icu_stay_id, start_offset, end_offset),
+                self.get_vitalPeriodic_feature(icu_stay_id, start_offset, end_offset),
+                ]
 
-    def get_vitalAperiodic_feature(self, icu_stay_id):
+        return data
+
+    def get_lab_feature(self, icu_stay_id, start_offset, end_offset):
         query = """
-                select observationoffset as offset, nonInvasiveSystolic, noninvasivediastolic, noninvasivemean
+                select labresultoffset as time_offset,
+                labname         as label,
+                labresult       as value
+                from lab
+                where labresultoffset >= {start_offset}
+                and labresultoffset <= {end_offset}
+                and labname in (
+                'AST (SGOT)',
+                'bands',
+                'bilirubin',
+                'calcium',
+                'Total CO2',
+                'creatinine',
+                'paCO2',
+                'potassium',
+                'PTT',
+                'SaO2',
+                'sodium',
+                'WBC x 1000',
+                'glucose',
+                'Hct',
+                'Hgb',
+                'lactate',
+                'calcium',
+                'Magnesium',
+                'paO2',
+                'FiO2',
+                'P/F ratio',
+                'albumin',
+                'platelets x 1000',
+                'bicarbonate',
+                'BUN',
+                'Base Excess',
+                'ALT (SGPT)',
+                'ALP',
+                'pH',
+                'PT - INR',
+                'Basos',
+                'EOs'
+                )
+                
+        """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
+        return self.get_data_by_query(query)
+
+    def get_nurseCharting_feature(self, icu_stay_id, start_offset, end_offset):
+        query = """
+            select nursingchartcelltypevalname as label,
+            nursingchartvalue           as value,
+            nursingchartoffset          as time_offset
+            from nursecharting
+            where nursingchartcelltypevallabel in (
+                               'Glasgow coma score', 'Score (Glasgow Coma Scale)'
+            )
+            and nursingchartcelltypevalname in (
+                              'Value', 'GCS Total', 'Motor', 'Verbal', 'Eyes')
+            and nursingchartcelltypecat in
+            (
+            'Scores', 'Other Vital Signs and Infusions'
+            ) and 
+            nursingchartoffset >= {start_offset}
+            and nursingchartoffset <= {end_offset}
+        """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
+        data = self.get_data_by_query(query)
+        data['label'].replace('Value', 'GCS Total', inplace=True)
+        data['label'].replace('Motor', 'GCS Motor', inplace=True)
+        data['label'].replace('Verbal', 'GCS Verbal', inplace=True)
+        data['label'].replace('Eyes', 'GCS Eyes', inplace=True)
+        return data
+
+    def get_respiratoryCharting_feature(self, icu_stay_id, start_offset, end_offset):
+        query = """
+                select respchartoffset as time_offset,
+                respchartvaluelabel as label,
+                respchartvalue      as value
+                from respiratorycharting
+                where 
+                respchartoffset >= {start_offset}
+                and respchartoffset <= {end_offset}
+                and respchartvaluelabel in (
+                                  'Plateau Pressure'
+                                      'Peak Insp. Pressure',
+                                  'Mean Airway Pressure',
+                                  'PEEP',
+                                  'TV/kg IBW'
+                )
+        """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
+        return self.get_data_by_query(query)
+
+    def get_vitalAperiodic_feature(self, icu_stay_id, start_offset, end_offset):
+        query = """
+                select observationoffset as time_offset, nonInvasiveSystolic, noninvasivediastolic, noninvasivemean
                 from vitalaperiodic
-                where observationoffset <= 1440
+                where observationoffset >= {start_offset}
+                and observationoffset <= {end_offset}
                 and patientunitstayid = {icu_stay_id};
-            """.format(icu_stay_id=icu_stay_id)
-        return PostgresSqlConnector.reformat_feature(self.get_data_by_query(query))
+            """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
+        return reformat_feature_from_column_to_line(self.get_data_by_query(query))
 
-    def get_vitalPeriodic_feature(self, icu_stay_id):
+    def get_vitalPeriodic_feature(self, icu_stay_id, start_offset, end_offset):
         query = """
-                    select observationoffset as offset,
+                    select observationoffset as time_offset,
                     heartrate,
                     cvp,
                     etco2,
@@ -178,27 +300,15 @@ class PostgresSqlConnector:
                     padiastolic,
                     pamean
                     from vitalperiodic
-                    where observationoffset <= 1440
+                    where observationoffset >= {start_offset}
+                    and observationoffset <= {end_offset}
                     and patientunitstayid = {icu_stay_id};
-            """.format(icu_stay_id=icu_stay_id)
-        return PostgresSqlConnector.reformat_feature(self.get_data_by_query(query))
-
-    @staticmethod
-    def reformat_feature(data):
-        label_list = list(data.columns).copy()
-        label_list.remove('offset')
-
-        new_data = pd.DataFrame(columns=['offset', 'label', 'value'])
-        for index, row in data.iterrows():
-            offset = row['offset']
-            for l in label_list:
-                if row[l]:
-                    new_data = new_data.append({'offset': offset, 'label': l, 'value': row[l]}, ignore_index=True)
-        return new_data
+            """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
+        return reformat_feature_from_column_to_line(self.get_data_by_query(query))
 
     def get_pao2_fio2_in_first_8h_after_ards_identification(self, icu_stay_id, identification_offset):
         query = """
-            select le.labresultoffset as offset,
+            select le.labresultoffset as time_offset,
                    le.labname         as label,
                    le.labresult       as value
             from lab as le
@@ -234,7 +344,7 @@ if __name__ == '__main__':
     # print(sql.get_static_feature(test_icu_stay_id))
     # print(sql.get_indicator_feature(test_icu_stay_id))
     # print(sql.get_feature(test_icu_stay_id))
-    print(sql.get_pao2_fio2_in_first_8h_after_ards_identification(test_icu_stay_id, test_identification_offset))
+    # print(sql.get_pao2_fio2_in_first_8h_after_ards_identification(test_icu_stay_id, test_identification_offset))
     # print(sql.get_vitalAperiodic_feature(test_icu_stay_id))
     # print(sql.get_vitalPeriodic_feature(test_icu_stay_id))
     # sql.set_ards_data_valid_tag(351515)
