@@ -1,6 +1,7 @@
 import pandas as pd
 
 from utils.postgres_sql import PostgresSqlConnector
+from utils.feature_extractor import FeatureExtractor
 from tqdm import tqdm
 import datetime
 import os
@@ -48,46 +49,6 @@ def mult_thread_save_ards_data(thread_data, thread_number):
     print("程序结束%s" % datetime.datetime.now())
 
 
-def add_feature_of_ards_data(sql_connector, ards_info, icu_stay_id, identification_offset):
-    # extra feature is mortality_28d, pf_8h_min, recovery_offset, ards_group
-
-    def fun_of_28_da_mortality(x):
-        offset_28 = 28 * 24 * 60
-        if (x['unitdischargestatus'] == 'Expired' and x[
-            'unitdischargeoffset'] <= offset_28) or (x['hospitaldischargestatus'] == 'Expired' and x[
-            'hospitaldischargeoffset'] <= offset_28):
-            return True
-        else:
-            return False
-
-    # def fun_of_group_label(x):
-    #     offset_1 = 24 * 60
-    #     # died
-    #     if x['unitdischargestatus'] == 'Expired'or x['hospitaldischargestatus'] == 'Expired':
-    #        expired_offset = min(x['unitdischargeoffset'], x['hospitaladmitoffset'])
-    #        if expired_offset - identification_offset <= offset_1:
-    #            return 'Rapid Death'
-    #
-    #     if x['unitdischargestatus'] == 'Alive' and x['hospitaldischargestatus'] == 'Alive':
-    #         alive_offset = max(x['unitdischargeoffset'], x['hospitaladmitoffset'])
-    #         if alive_offset - identification_offset >= offset_1:
-    #             return ''
-    #
-    #     if (x['unitdischargestatus'] == 'Expired' and x[
-    #         'unitdischargeoffset'] <= offset_1) or (x['hospitaldischargestatus'] == 'Expired' and x[
-    #         'hospitaladmitoffset'] <= offset_1):
-    #         return
-    #     else:
-    #         return False
-
-    ards_info['icu_stay_id'] = icu_stay_id
-    ards_info['identification_offset'] = identification_offset
-
-    ards_info['mortality_28d'] = ards_info.apply(fun_of_28_da_mortality, axis=1)
-
-    # ards_info['group_label'] = ards_info.apply(fun_of_group_label, axis=1)
-    return ards_info
-
 
 def save_ards_data(base_ards_data, thread_number=0):
     sql_connector = PostgresSqlConnector()
@@ -102,13 +63,13 @@ def save_ards_data(base_ards_data, thread_number=0):
         icu_stay_id = row['icu_stay_id']
         identification_offset = row['identification_offset']
         # get origin feature
-        ards_info = sql_connector.get_feature(icu_stay_id)
+        a_ards_info = sql_connector.get_feature(icu_stay_id)
 
         # add extra feature
-        ards_info = add_feature_of_ards_data(sql_connector, ards_info, icu_stay_id, identification_offset)
+        a_ards_info = FeatureExtractor.add_feature_of_ards_data(a_ards_info, icu_stay_id, identification_offset)
 
         # combine
-        ards_data = pd.concat([ards_data, ards_info], axis=0)
+        ards_data = pd.concat([ards_data, a_ards_info], axis=0)
 
     # print(ards_data.columns)
     # print(ards_data.iloc[:1].to_json())

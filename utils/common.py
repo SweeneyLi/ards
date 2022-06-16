@@ -69,6 +69,9 @@ def reformat_data_from_dataframe_to_dict(df):
 
 
 def generate_pf_list(pao2_list, fio2_list):
+    pao2_list = sorted(pao2_list, key=lambda x: x[0])
+    fio2_list = sorted(fio2_list, key=lambda x: x[0])
+
     pf_list = []
     if len(pao2_list) < 2 or len(fio2_list) < 2:
         return pf_list
@@ -94,6 +97,7 @@ def generate_pf_list(pao2_list, fio2_list):
         # print('%d: %f / %f = %f' % (time_value, last_p_v, last_f_v, last_p_v / last_f_v))
 
     return pf_list
+
 
 
 assert generate_pf_list(

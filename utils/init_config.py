@@ -28,6 +28,7 @@ def read_db_config():
     with open(db_config_path, 'r') as f:
         db_config = yaml.load(f.read(), Loader=yaml.Loader)['database']
 
+
 def read_data_config():
     global diagnoses_dict
     global dynamic_range_dict
