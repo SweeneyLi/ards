@@ -83,7 +83,7 @@ class FeatureExtractor:
         a_ards_info['icu_stay_id'] = icu_stay_id
         a_ards_info['identification_offset'] = identification_offset
 
-        a_ards_info['admission_diagnosis'] = diagnoses_dict.get(a_ards_info['apacheadmissiondx'], 'Other')
+        a_ards_info['admission_diagnosis'] = diagnoses_dict.get(a_ards_info.loc[0, 'apacheadmissiondx'], 'Other')
 
         if a_ards_info['unitdischargestatus'] == 'Expired':
             a_ards_info['hospitaldischargestatus'] = 'Expired'

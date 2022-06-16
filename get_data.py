@@ -12,8 +12,8 @@ base_ards_data_path = './dataset/valid_id_and_identification_offset.csv'
 
 output_path = './output'
 output_data_path = './output/ards_data'
-assert os.path.exists(output_path) is False
-os.mkdir(output_data_path)
+if os.path.exists(output_data_path) is False:
+    os.mkdir(output_data_path)
 
 
 def get_ards_data(mult_thread=True):
@@ -72,7 +72,7 @@ def save_ards_data(base_ards_data, thread_number=0):
         a_ards_static_feature = sql_connector.get_static_feature(icu_stay_id)
 
         # add extra static feature
-        a_ards_static_feature = FeatureExtractor.add_static_feature_of_ards_data(a_ards_static_feature, icu_stay_id,
+        a_ards_static_feature = FeatureExtractor.add_static_feature_of_ards_data(a_ards_static_feature.to_json(orient='records')[0], icu_stay_id,
                                                                                  identification_offset)
 
         # combine
