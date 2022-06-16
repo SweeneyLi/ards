@@ -1,9 +1,9 @@
 
 ## Figure
-![](static/img/Fig. 3 Characterization of ARDS cohort.png)
-![](static/img/Fig. 4 Top univariate associations with patient status 48 h after identification.png)
-![](static/img/Fig. 5 Trends of acidotic parameters over time by patient status 48 h after identification time.png)
-![](static/img/Fig. 6 Predicting patients with a long ARDS course.png)
+![](https://github.com/Liu-Yicheng/Fast-RCNN/raw/master/static/img/fig3.png)
+![](static/img/fig4.png)
+![](static/img/fig5.png)
+![](static/img/fig6.png)
 ```yaml
 paper: Utilizing machine learning to improve clinical trial design for acute respiratory distress syndrome
 data info:
