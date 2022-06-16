@@ -1,3 +1,4 @@
+import json
 import operator
 import pandas as pd
 import numpy as np
@@ -82,24 +83,25 @@ class FeatureExtractor:
 
             return 'spontaneous recovery'
 
+        a_ards_dict = json.loads(a_ards_info.to_json(orient='records'))[0]
         # base info
         a_ards_info['icu_stay_id'] = icu_stay_id
         a_ards_info['identification_offset'] = identification_offset
 
-        a_ards_info['admission_diagnosis'] = diagnoses_dict.get(a_ards_info['apacheadmissiondx'], 'Other')
+        a_ards_info['admission_diagnosis'] = diagnoses_dict.get(a_ards_dict['apacheadmissiondx'], 'Other')
 
         if a_ards_info['unitdischargestatus'] == 'Expired':
             a_ards_info['hospitaldischargestatus'] = 'Expired'
-            a_ards_info['hospitaldischargeoffset'] = a_ards_info['unitdischargeoffset']
+            a_ards_info['hospitaldischargeoffset'] = a_ards_dict['unitdischargeoffset']
 
         # 28d_death_status
-        a_ards_info['28d_death_status'] = get_death_28d(a_ards_info)
+        a_ards_info['28d_death_status'] = get_death_28d(a_ards_dict)
 
         # ph_8h_min
-        a_ards_info['pf_8h_min'] = get_pf_8h_min(a_ards_info)
+        a_ards_info['pf_8h_min'] = get_pf_8h_min(a_ards_dict)
 
         # ards_group
-        a_ards_info['ards_group'] = get_ards_group(a_ards_info)
+        a_ards_info['ards_group'] = get_ards_group(a_ards_dict)
 
         return a_ards_info
 
