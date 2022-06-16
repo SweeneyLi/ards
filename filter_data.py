@@ -9,7 +9,7 @@ import threading
 
 def get_base_ards_data(mult_thread=True):
     sql_connector = postgres_sql.PostgresSqlConnector()
-    ards_data_id_list = sql_connector.get_ards_data_icu_id()
+    ards_data_id_list = sql_connector.get_ards_data_icu_stay_id()
     sql_connector.close()
 
     print('There are %d ids' % len(ards_data_id_list))
@@ -48,7 +48,7 @@ def save_valid_id_and_identification_offset(ards_data_id_list, thread_number=0):
 
     valid_id_list = []
     for ards_data_id in tqdm(ards_data_id_list):
-        pao2_fio2_peep_info = sql_connector.get_pao2_fio2_peep_info_by_icu_id(ards_data_id)
+        pao2_fio2_peep_info = sql_connector.get_pao2_fio2_peep_info_by_icu_stay_id(ards_data_id)
         identification_offset = validator.DataValidator.get_identification_offset(pao2_fio2_peep_info)
         if identification_offset is None:
             continue

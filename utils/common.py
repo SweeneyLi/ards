@@ -1,7 +1,23 @@
-__all__ = ['log_time']
-
 import os
 import pandas as pd
+import yaml
+
+__all__ = ['log_time', 'init_config', 'SQL_USER',
+           'DB_NAME',
+           'DB_PASSWORD',
+           'SCHEMA_NAME',
+           'SQL_HOST',
+           'SQL_PORT',
+           'SECTION_RANGE_RICT'
+           ]
+
+SQL_USER = None
+DB_NAME = None
+DB_PASSWORD = None
+SCHEMA_NAME = None
+SQL_HOST = None
+SQL_PORT = None
+SECTION_RANGE_RICT = None
 
 
 def log_time(func):
@@ -49,6 +65,21 @@ def combine_csvs(data_path=None, data_name=None):
     print(df.columns)
 
     df.to_csv(os.path.join(data_path, data_name))
+
+
+def init_config(config_path):
+    assert os.path.isfile(config_path) is True
+
+    with open(config_path, 'r') as f:
+        config = yaml.load(f.read(), Loader=yaml.Loader)
+    SQL_USER = config['database']['sql_user']
+    DB_NAME = config['database']['db_name']
+    DB_PASSWORD = config['database']['db_password']
+    SCHEMA_NAME = config['database']['schema_name']
+    SQL_HOST = config['database']['sql_host']
+    SQL_PORT = config['database']['sql_port']
+
+    SECTION_RANGE_RICT = config['section_range']
 
 
 if __name__ == '__main__':

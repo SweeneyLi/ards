@@ -1,37 +1,15 @@
 import pandas as pd
 import psycopg2
-import yaml
-import os
+from .common import *
 
 __all__ = ['PostgresSqlConnector']
-
-config_path = '/Users/sweeney/WorkSpace/WorkCode/aids/process_data/config.yaml'
-if os.path.isfile(config_path):
-    print('Detected the config file')
-    with open(config_path, 'r') as f:
-        config = yaml.load(f.read(), Loader=yaml.Loader)
-    sql_user = config['database']['sql_user']
-    db_name = config['database']['db_name']
-    db_password = config['database']['db_password']
-    schema_name = config['database']['schema_name']
-    sql_host = config['database']['sql_host']
-    sql_port = config['database']['sql_port']
-
-    section_range = config['section_range']
-else:
-    sql_user = 'postgres'
-    db_name = 'eicu'
-    db_password = '123456'
-    schema_name = 'eicu_crd'
-    sql_host = '172.16.60.173'
-    sql_port = 3307
 
 
 class PostgresSqlConnector:
     def __init__(self):
         # Connect to the database
-        self.con = psycopg2.connect(dbname=db_name, user=sql_user, password=db_password, host=sql_host, port=sql_port)
-        self.query_schema = 'SET search_path to public,' + schema_name + ';'
+        self.con = psycopg2.connect(dbname=DB_NAME, user=SQL_USER, password=DB_PASSWORD, host=SQL_HOST, port=SQL_PORT)
+        self.query_schema = 'SET search_path to public,' + SCHEMA_NAME + ';'
 
     def get_data_by_query(self, query):
         query = self.query_schema + query
@@ -98,8 +76,9 @@ class PostgresSqlConnector:
                          axis=1)
 
     def get_static_feature(self, icu_stay_id):
-        return pd.concat((self.get_patient_table_feature(icu_stay_id), self.get_apachePatientResult_table_feature(icu_stay_id)),
-                         axis=1)
+        return pd.concat(
+            (self.get_patient_table_feature(icu_stay_id), self.get_apachePatientResult_table_feature(icu_stay_id)),
+            axis=1)
 
     def get_patient_table_feature(self, icu_stay_id):
         query = """
@@ -122,7 +101,6 @@ class PostgresSqlConnector:
                     where patientunitstayid = {icu_stay_id};
             """.format(icu_stay_id=icu_stay_id)
         return self.get_data_by_query(query)
-
 
     def get_apachePatientResult_table_feature(self, icu_stay_id):
         query = """

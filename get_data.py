@@ -1,6 +1,6 @@
 import pandas as pd
 
-from utils import validator, postgres_sql
+from utils import postgres_sql
 from tqdm import tqdm
 import datetime
 import os

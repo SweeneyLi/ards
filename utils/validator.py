@@ -1,13 +1,6 @@
 import os
-import yaml
 
 __all__ = ['DataValidator']
-
-config_path = '/Users/sweeney/WorkSpace/WorkCode/aids/process_data/config.yaml'
-assert os.path.isfile(config_path)
-with open(config_path, 'r') as f:
-    config = yaml.load(f.read(), Loader=yaml.Loader)
-SECTION_RANGE_RICT = config['section_range']
 
 
 class BaseSectionValidator:
