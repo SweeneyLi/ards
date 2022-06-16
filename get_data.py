@@ -19,7 +19,7 @@ if os.path.exists(output_data_path) is False:
 
 def get_ards_data(mult_thread=True):
     base_ards_data = pd.read_csv(base_ards_data_path, index_col=0)
-    base_ards_data = base_ards_data.iloc[:3]
+    base_ards_data = base_ards_data.iloc[:1]
 
     print('There are %d base data' % len(base_ards_data))
 
