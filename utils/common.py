@@ -77,7 +77,7 @@ def reformat_data_from_dataframe_to_dict_and_remove_outlier(df):
         offset = row['time_offset']
 
         if not is_number(value):
-            print('name: %s, value:%s, offset:%s' % (name, value, offset))
+            print('not a number! -> name: %s, value:%s, offset:%s' % (name, value, offset))
             continue
         value = float(value)
 
