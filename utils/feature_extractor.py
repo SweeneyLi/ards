@@ -22,6 +22,7 @@ class FeatureExtractor:
         # prepare data
         pao2_fio2_peep_info['P/F ratio'] = generate_pf_list(pao2_fio2_peep_info['paO2'],
                                                             pao2_fio2_peep_info['FiO2'])
+        pao2_fio2_peep_info['PEEP'] = sorted(pao2_fio2_peep_info['PEEP'].items(), key=lambda x: x[0])
 
         identification_offset = -100000
         for section_type in FeatureExtractor.valid_type:
@@ -120,7 +121,7 @@ class FeatureExtractor:
                 if len(record_list) == 0:
                     continue
 
-                record_value_list = list(map(record_list, lambda x: x[1]))
+                record_value_list = list(map(lambda x: x[1], record_list))
                 dynamic_feature_data[label + '_media'] = np.mean(record_value_list)
                 dynamic_feature_data[label + '_variance'] = np.var(record_value_list)
                 dynamic_feature_data[label + '_rate_change'] = record_value_list[-1] - record_value_list[0] if len(

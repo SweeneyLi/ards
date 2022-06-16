@@ -81,7 +81,7 @@ def save_ards_data(base_ards_data, thread_number=0):
                                                                                  identification_offset)
 
         # combine
-        temp = pd.concat([ards_data, a_ards_static_feature], axis=0)
+        # temp = pd.concat([ards_data, a_ards_static_feature], axis=0)
 
         # get dynamic feature
         a_ards_dynamic_feature_list = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
@@ -90,7 +90,7 @@ def save_ards_data(base_ards_data, thread_number=0):
 
         a_ards_dynamic_feature['icu_stay_id'] = icu_stay_id
 
-        temp = pd.merge(temp, a_ards_dynamic_feature)
+        temp = pd.merge(a_ards_static_feature, a_ards_dynamic_feature)
 
         ards_data.append(temp)
 
