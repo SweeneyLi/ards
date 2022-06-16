@@ -71,6 +71,7 @@ def save_ards_data(base_ards_data, thread_number=0):
         identification_offset = row['identification_offset']
         # get static feature
         a_ards_static_feature = sql_connector.get_static_feature(icu_stay_id)
+        assert a_ards_static_feature.shape[0] == 1
 
         # add extra static feature
         a_ards_static_feature = FeatureExtractor.add_static_feature_of_ards_data(sql_connector,
@@ -84,7 +85,9 @@ def save_ards_data(base_ards_data, thread_number=0):
         # get dynamic feature
         a_ards_dynamic_feature_list = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
                                                                         identification_offset + offset_24h)
-        a_ards_dynamic_feature = FeatureExtractor.add_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list)
+        assert a_ards_dynamic_feature_list.shape[0] == 1
+        # reformat  dynamic feature
+        a_ards_dynamic_feature = FeatureExtractor.reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list)
 
         a_ards_dynamic_feature['icu_stay_id'] = icu_stay_id
 

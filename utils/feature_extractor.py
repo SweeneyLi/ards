@@ -106,7 +106,7 @@ class FeatureExtractor:
         return a_ards_info
 
     @staticmethod
-    def add_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list):
+    def reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list):
         dynamic_feature_column = []
         for feature_name in dynamic_feature_list:
             dynamic_feature_column.append([
