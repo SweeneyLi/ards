@@ -1,6 +1,7 @@
 import pandas as pd
 import psycopg2
 from init_config import db_config
+from data_validator import remove_outliers_for_continuous_features
 
 __all__ = ['PostgresSqlConnector']
 
@@ -28,8 +29,6 @@ class PostgresSqlConnector:
         return self.get_data_by_query(query)['patientunitstayid'].tolist()
 
     def get_pao2_fio2_peep_info_by_icu_stay_id(self, icu_stay_id):
-        assert type(icu_stay_id) == int
-
         query = """
             select le.labresultoffset as offset,
                    le.labname         as label,
@@ -51,9 +50,9 @@ class PostgresSqlConnector:
               and res.respchartvalue is not null
               and position('%' in res.respchartvalue) = 0;
 
-            """.format(icuid=icu_stay_id)
+            """.format(icu_stay_id=icu_stay_id)
 
-        return self.get_data_by_query(query)
+        return remove_outliers_for_continuous_features(self.get_data_by_query(query))
 
     # todo::failed
     def set_ards_data_valid_tag(self, icu_stay_id, valid_tag=1):
@@ -81,7 +80,6 @@ class PostgresSqlConnector:
                          axis=1)
 
     def get_static_feature(self, icu_stay_id):
-        # extra feature is pf_8h_min, recovery_offset, ards_group
         return pd.concat(
             (self.get_patient_table_feature(icu_stay_id), self.get_apachePatientResult_table_feature(icu_stay_id)),
             axis=1)
@@ -156,7 +154,7 @@ class PostgresSqlConnector:
         return data
 
     def get_dynamic_result(self, icu_stay_id):
-        return
+        return remove_outliers_for_continuous_features([])
 
     def get_vitalAperiodic_feature(self, icu_stay_id):
         query = """
@@ -198,15 +196,45 @@ class PostgresSqlConnector:
                     new_data = new_data.append({'offset': offset, 'label': l, 'value': row[l]}, ignore_index=True)
         return new_data
 
+    def get_pao2_fio2_in_first_8h_after_ards_identification(self, icu_stay_id, identification_offset):
+        query = """
+            select le.labresultoffset as offset,
+                   le.labname         as label,
+                   le.labresult       as value
+            from lab as le
+            where le.patientunitstayid = {icu_stay_id}
+              and le.labname in
+                  ('paO2', 'FiO2')
+              and le.labresult is not null
+              and le.labresult > 0
+              and le.labresultoffset >= {identification_offset}
+              and le.labresultoffset <= {identification_offset} + 8 * 60 
+            UNION
+            select res.respchartoffset                 as resultoffset,
+                   res.respchartvaluelabel             as name,
+                   CAST(res.respchartvalue as DECIMAL) as value
+            from respiratorycharting as res
+            where res.patientunitstayid = {icu_stay_id}
+              and res.respchartvaluelabel = 'FiO2'
+              and res.respchartvalue is not null
+              and position('%' in res.respchartvalue) = 0
+              and res.respchartoffset >= {identification_offset}
+              and res.respchartoffset <= {identification_offset} + 8 * 60;
+            """.format(icu_stay_id=icu_stay_id, identification_offset=identification_offset)
+
+        return self.get_data_by_query(query)
+
 
 if __name__ == '__main__':
     test_icu_stay_id = 554884
+    test_identification_offset = 594
     sql = PostgresSqlConnector()
     # print(sql.get_patient_table_feature(test_icu_stay_id))
     # print(sql.get_apachePatientResult_table_feature(test_icu_stay_id))
     # print(sql.get_static_feature(test_icu_stay_id))
     # print(sql.get_indicator_feature(test_icu_stay_id))
-    print(sql.get_feature(test_icu_stay_id))
+    # print(sql.get_feature(test_icu_stay_id))
+    print(sql.get_pao2_fio2_in_first_8h_after_ards_identification(test_icu_stay_id, test_identification_offset))
     # print(sql.get_vitalAperiodic_feature(test_icu_stay_id))
     # print(sql.get_vitalPeriodic_feature(test_icu_stay_id))
     # sql.set_ards_data_valid_tag(351515)

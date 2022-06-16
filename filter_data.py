@@ -1,11 +1,17 @@
 import pandas as pd
 
-from utils.validator import DataValidator
 from utils.postgres_sql import PostgresSqlConnector
+from utils.feature_extractor import FeatureExtractor
+from utils.common import reformat_data_from_dataframe_to_dict
 from tqdm import tqdm
 import datetime
 import os
 import threading
+
+output_path = './output'
+output_data_path = './output/base_data'
+assert os.path.exists(output_path) is False
+os.mkdir(output_data_path)
 
 
 def get_base_ards_data(mult_thread=True):
@@ -49,14 +55,17 @@ def save_valid_id_and_identification_offset(ards_data_id_list, thread_number=0):
 
     valid_id_list = []
     for ards_data_id in tqdm(ards_data_id_list):
-        pao2_fio2_peep_info = sql_connector.get_pao2_fio2_peep_info_by_icu_stay_id(ards_data_id)
-        identification_offset = DataValidator.get_identification_offset(pao2_fio2_peep_info)
+        # get pao2, fio2 and peep
+        pao2_fio2_peep_data = sql_connector.get_pao2_fio2_peep_info_by_icu_stay_id(ards_data_id)
+        pao2_fio2_peep_info = reformat_data_from_dataframe_to_dict(pao2_fio2_peep_data)
+
+        identification_offset = FeatureExtractor.get_identification_offset(pao2_fio2_peep_info)
         if identification_offset is None:
             continue
         valid_id_list.append({'icu_stay_id': ards_data_id, 'identification_offset': identification_offset})
     df = pd.DataFrame(valid_id_list, columns=['icu_stay_id', 'identification_offset'])
 
-    df.to_csv(os.path.join('/process_data/dataset/base_data',
+    df.to_csv(os.path.join(output_data_path,
                            'valid_id_%d.csv' % thread_number))
 
     sql_connector.close()

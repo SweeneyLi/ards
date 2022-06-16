@@ -1,12 +1,17 @@
 import pandas as pd
 
-from utils import postgres_sql
+from utils.postgres_sql import PostgresSqlConnector
 from tqdm import tqdm
 import datetime
 import os
 import threading
 
 base_ards_data_path = './dataset/valid_id_and_identification_offset.csv'
+
+output_path = './output'
+output_data_path = './output/ards_data'
+assert os.path.exists(output_path) is False
+os.mkdir(output_data_path)
 
 
 def get_ards_data(mult_thread=True):
@@ -43,7 +48,9 @@ def mult_thread_save_ards_data(thread_data, thread_number):
     print("程序结束%s" % datetime.datetime.now())
 
 
-def add_feature_of_ards_data(ards_info, icu_stay_id, identification_offset):
+def add_feature_of_ards_data(sql_connector, ards_info, icu_stay_id, identification_offset):
+    # extra feature is mortality_28d, pf_8h_min, recovery_offset, ards_group
+
     def fun_of_28_da_mortality(x):
         offset_28 = 28 * 24 * 60
         if (x['unitdischargestatus'] == 'Expired' and x[
@@ -83,8 +90,9 @@ def add_feature_of_ards_data(ards_info, icu_stay_id, identification_offset):
 
 
 def save_ards_data(base_ards_data, thread_number=0):
-    sql_connector = postgres_sql.PostgresSqlConnector()
+    sql_connector = PostgresSqlConnector()
 
+    # prepare dataframe
     ards_data_column = ['icu_stay_id', 'identification_offset']
     ards_data_column.extend(['mortality_28d', 'ards_group'])
     ards_data_column.extend(sql_connector.get_feature(base_ards_data.iloc[0]['icu_stay_id']).columns)
@@ -93,10 +101,13 @@ def save_ards_data(base_ards_data, thread_number=0):
     for index, row in tqdm(base_ards_data.iterrows(), total=base_ards_data.shape[0]):
         icu_stay_id = row['icu_stay_id']
         identification_offset = row['identification_offset']
+        # get origin feature
         ards_info = sql_connector.get_feature(icu_stay_id)
 
-        ards_info = add_feature_of_ards_data(ards_info, icu_stay_id, identification_offset)
+        # add extra feature
+        ards_info = add_feature_of_ards_data(sql_connector, ards_info, icu_stay_id, identification_offset)
 
+        # combine
         ards_data = pd.concat([ards_data, ards_info], axis=0)
 
     # print(ards_data.columns)
