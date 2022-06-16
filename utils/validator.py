@@ -1,16 +1,20 @@
 import os
+from init_config import dynamic_range_dict
 
 __all__ = ['DataValidator']
 
 
 class BaseSectionValidator:
-    def __init__(self, min_value, min_open, max_value, max_open):
+    def __init__(self, min_value=None, min_open=None, max_value=None, max_open=None):
         self.min_value = float(min_value) if min_value.lower() != '-inf' else '-inf'
         self.min_open = min_open
         self.max_value = float(max_value)
         self.max_open = max_open
 
     def is_valid(self, input_value):
+        if self.min_value is None:
+            return True
+
         if self.min_value != '-inf' and self.min_open and input_value < self.min_value:
             return False
         elif self.min_value != '-inf' and not self.min_open and input_value <= self.min_value:
@@ -27,6 +31,9 @@ class SectionValidator:
 
     @staticmethod
     def base_section_validator_constructor(input_value):
+        if input_value is None:
+            return BaseSectionValidator()
+
         assert len(input_value) >= 4 and ',' in input_value
         min_open = input_value[0] == '['
         max_open = input_value[-1] == ']'
@@ -36,10 +43,10 @@ class SectionValidator:
     @staticmethod
     def is_valid(name, value):
         if not SectionValidator.section_validator_dict.get(name, None):
-            # print(name)
-            assert name in SECTION_RANGE_RICT.keys()
+            # print(name, dynamic_range_dict.keys())
+            assert name in dynamic_range_dict.keys()
             SectionValidator.section_validator_dict[name] = SectionValidator.base_section_validator_constructor(
-                SECTION_RANGE_RICT[name])
+                dynamic_range_dict[name])
         return SectionValidator.section_validator_dict[name].is_valid(value)
 
 
@@ -63,8 +70,8 @@ class DataValidator:
         identification_offset = -100000
         for section_type in DataValidator.valid_type:
             continuous_offset = DataValidator.get_continuous_offset(DataValidator.continue_offset,
-                                                      section_type,
-                                                      pao2_fio2_peep_info[section_type])
+                                                                    section_type,
+                                                                    pao2_fio2_peep_info[section_type])
             if continuous_offset is None:
                 return None
             identification_offset = max(identification_offset, continuous_offset)
@@ -86,7 +93,7 @@ class DataValidator:
             pao2_fio2_peep_info[k] = sorted(pao2_fio2_peep_info[k].items(), key=lambda x: x[0])
 
         pao2_fio2_peep_info['P/F ratio'] = DataValidator.generate_pf_list(pao2_fio2_peep_info['paO2'],
-                                                                   pao2_fio2_peep_info['FiO2'])
+                                                                          pao2_fio2_peep_info['FiO2'])
 
         return pao2_fio2_peep_info
 

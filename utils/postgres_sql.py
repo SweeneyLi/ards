@@ -1,15 +1,18 @@
 import pandas as pd
 import psycopg2
-from .common import *
+from init_config import db_config
 
 __all__ = ['PostgresSqlConnector']
 
 
 class PostgresSqlConnector:
     def __init__(self):
-        # Connect to the database
-        self.con = psycopg2.connect(dbname=DB_NAME, user=SQL_USER, password=DB_PASSWORD, host=SQL_HOST, port=SQL_PORT)
-        self.query_schema = 'SET search_path to public,' + SCHEMA_NAME + ';'
+        self.con = psycopg2.connect(dbname=db_config['db_name'],
+                                    user=db_config['sql_user'],
+                                    password=db_config['db_password'],
+                                    host=db_config['sql_host'],
+                                    port=db_config['sql_port'])
+        self.query_schema = 'SET search_path to public,' + db_config['schema_name'] + ';'
 
     def get_data_by_query(self, query):
         query = self.query_schema + query

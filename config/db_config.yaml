@@ -1,0 +1,7 @@
+database:
+    sql_user: postgres
+    db_name: eicu
+    db_password: 123456
+    schema_name: eicu_crd
+    sql_host: 172.16.60.173
+    sql_port: 3307
