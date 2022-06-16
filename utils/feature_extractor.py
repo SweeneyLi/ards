@@ -17,7 +17,7 @@ class FeatureExtractor:
 
     @staticmethod
     def get_identification_offset(pao2_fio2_peep_info):
-        assert operator.eq(list(pao2_fio2_peep_info.keys()),  ['paO2', 'FiO2', 'PEEP']) is True
+        assert set(pao2_fio2_peep_info.keys()) == {'paO2', 'FiO2', 'PEEP'}
 
         # prepare data
         pao2_fio2_peep_info['P/F ratio'] = generate_pf_list(pao2_fio2_peep_info['paO2'],
@@ -51,7 +51,7 @@ class FeatureExtractor:
             pf_8h_data = sql_connector.get_pao2_fio2_in_first_8h_after_ards_identification(x['icu_stay_id'],
                                                                                            x['identification_offset'])
             pf_8h_info = reformat_data_from_dataframe_to_dict_and_remove_outlier(pf_8h_data)
-            assert operator.eq(list(pf_8h_info.keys()), ['paO2', 'FiO2'])
+            assert set(pf_8h_info.keys()) == {'paO2', 'FiO2'}
             pf_8h_list = generate_pf_list(pf_8h_info['paO2'], pf_8h_info['FiO2'])
             return min(list(map(lambda x: x[1], pf_8h_list)))
 
