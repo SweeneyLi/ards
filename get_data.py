@@ -7,6 +7,7 @@ from tqdm import tqdm
 import datetime
 import os
 import threading
+import json
 
 base_ards_data_path = './dataset/valid_id_and_identification_offset.csv'
 
@@ -72,7 +73,11 @@ def save_ards_data(base_ards_data, thread_number=0):
         a_ards_static_feature = sql_connector.get_static_feature(icu_stay_id)
 
         # add extra static feature
-        a_ards_static_feature = FeatureExtractor.add_static_feature_of_ards_data(a_ards_static_feature.to_json(orient='records')[0], icu_stay_id,
+        a_ards_static_info = json.loads(a_ards_static_feature.to_json(orient='records'))[0]
+
+        a_ards_static_feature = FeatureExtractor.add_static_feature_of_ards_data(sql_connector,
+                                                                                 a_ards_static_info,
+                                                                                 icu_stay_id,
                                                                                  identification_offset)
 
         # combine
