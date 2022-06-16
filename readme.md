@@ -27,7 +27,7 @@
 | ------------ | ------------------------------------------------------------ |
 | explanation  | Three sub figure need three kinds of lab data(Lactate,PH and Bicarbonate), each lab data need two types of data(point and box).So there are six files of this experiment. |
 | data time    | 24h after ARDS identification                                |
-| data format  | point: data_label, lab_data_offset(each 15m), lab_data_value<br/>    example: long_stay, 45, 8<br/>  box: data_label, lab_data_section_start(each 2h),  lab_data_section_end， lab_data_section_25th, lab_data_section_75th<br/>    example: long_stay, 6, 8, 5.1, 8.2 |
+| data format  | point: data_label, lab_data_offset(each 15m), lab_data_value<br/>  box: data_label, lab_data_section_start(each 2h),  lab_data_section_end， lab_data_section_25th, lab_data_section_75th |
 | data example | point: long_stay, 45, 8<br/>  box: long_stay, 6, 8, 5.1, 8.2 |
 ### Figure 6
 ![](https://github.com/SweeneyLi/ards/raw/master/static/img/fig6.png)
