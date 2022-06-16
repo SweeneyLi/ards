@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-import yaml
 
 __all__ = ['log_time']
 
@@ -53,4 +52,4 @@ def combine_csvs(data_path=None, data_name=None):
 
 
 if __name__ == '__main__':
-    combine_csvs('/process_data/dataset/ards_data')
+    combine_csvs('../output/')

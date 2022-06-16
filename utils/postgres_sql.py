@@ -14,6 +14,9 @@ class PostgresSqlConnector:
                                     port=db_config['sql_port'])
         self.query_schema = 'SET search_path to public,' + db_config['schema_name'] + ';'
 
+    def close(self):
+        self.con.close()
+
     def get_data_by_query(self, query):
         query = self.query_schema + query
         return pd.read_sql_query(query, self.con)
@@ -54,47 +57,42 @@ class PostgresSqlConnector:
 
     # todo::failed
     def set_ards_data_valid_tag(self, icu_stay_id, valid_tag=1):
-        con = psycopg2.connect(dbname=db_name, user=sql_user, password=db_password, host=sql_host, port=sql_port)
-        # query = """select * from pg_roles"""
-        query = """
-            update ards_data
-            set valid_tag = {valid_tag}
-            where patientunitstayid = {icu_stay_id};
-            """.format(icu_stay_id=icu_stay_id, valid_tag=valid_tag)
-        print(query)
-        cur = con.cursor()
-        cur.execute(query)
-        # data = cur.fetchall()
-        # print(data)
-
-        con.commit()
-        cur.close()
-        con.close()
-
-    def close(self):
-        self.con.close()
+        pass
+        # con = psycopg2.connect(dbname=db_name, user=sql_user, password=db_password, host=sql_host, port=sql_port)
+        # # query = """select * from pg_roles"""
+        # query = """
+        #     update ards_data
+        #     set valid_tag = {valid_tag}
+        #     where patientunitstayid = {icu_stay_id};
+        #     """.format(icu_stay_id=icu_stay_id, valid_tag=valid_tag)
+        # print(query)
+        # cur = con.cursor()
+        # cur.execute(query)
+        # # data = cur.fetchall()
+        # # print(data)
+        #
+        # con.commit()
+        # cur.close()
+        # con.close()
 
     def get_feature(self, icu_stay_id):
+
         return pd.concat((self.get_static_feature(icu_stay_id), self.get_indicator_feature(icu_stay_id)),
                          axis=1)
 
     def get_static_feature(self, icu_stay_id):
+        # extra feature is pf_8h_min, recovery_offset, ards_group
         return pd.concat(
             (self.get_patient_table_feature(icu_stay_id), self.get_apachePatientResult_table_feature(icu_stay_id)),
             axis=1)
 
     def get_patient_table_feature(self, icu_stay_id):
         query = """
-                    select 
-                    gender,
+                    select gender,
                     age,
                     apacheadmissiondx,
-                    (case
-                    when admissionheight is not null
-                    and admissionheight != 0
-                    and admissionweight is not null
-                    then admissionweight / (admissionheight * admissionheight * 0.0001)
-                    else NULL end) as bmi,
+                    admissionheight,
+                    admissionweight,
                     hospitaladmitsource,
                     unitdischargeoffset,
                     unitdischargestatus,

@@ -1,6 +1,7 @@
 import pandas as pd
 
-from utils import validator, postgres_sql
+from utils.validator import DataValidator
+from utils.postgres_sql import PostgresSqlConnector
 from tqdm import tqdm
 import datetime
 import os
@@ -8,7 +9,7 @@ import threading
 
 
 def get_base_ards_data(mult_thread=True):
-    sql_connector = postgres_sql.PostgresSqlConnector()
+    sql_connector = PostgresSqlConnector()
     ards_data_id_list = sql_connector.get_ards_data_icu_stay_id()
     sql_connector.close()
 
@@ -44,12 +45,12 @@ def mult_thread_save_valid_id_and_identification_offset(thread_data, thread_numb
 
 
 def save_valid_id_and_identification_offset(ards_data_id_list, thread_number=0):
-    sql_connector = postgres_sql.PostgresSqlConnector()
+    sql_connector = PostgresSqlConnector()
 
     valid_id_list = []
     for ards_data_id in tqdm(ards_data_id_list):
         pao2_fio2_peep_info = sql_connector.get_pao2_fio2_peep_info_by_icu_stay_id(ards_data_id)
-        identification_offset = validator.DataValidator.get_identification_offset(pao2_fio2_peep_info)
+        identification_offset = DataValidator.get_identification_offset(pao2_fio2_peep_info)
         if identification_offset is None:
             continue
         valid_id_list.append({'icu_stay_id': ards_data_id, 'identification_offset': identification_offset})

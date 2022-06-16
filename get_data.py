@@ -6,7 +6,7 @@ import datetime
 import os
 import threading
 
-base_ards_data_path = '/process_data/dataset/base_data/valid_id.csv'
+base_ards_data_path = './dataset/valid_id_and_identification_offset.csv'
 
 
 def get_ards_data(mult_thread=True):
@@ -86,7 +86,7 @@ def save_ards_data(base_ards_data, thread_number=0):
     sql_connector = postgres_sql.PostgresSqlConnector()
 
     ards_data_column = ['icu_stay_id', 'identification_offset']
-    ards_data_column.extend(['mortality_28d', 'group_label'])
+    ards_data_column.extend(['mortality_28d', 'ards_group'])
     ards_data_column.extend(sql_connector.get_feature(base_ards_data.iloc[0]['icu_stay_id']).columns)
     ards_data = pd.DataFrame(columns=ards_data_column)
 

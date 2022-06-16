@@ -5,12 +5,12 @@
 ### Figure 3
 ![](https://github.com/SweeneyLi/ards/raw/master/static/img/fig3.png)
 
-| figure name  | Characterization of ARDS cohort.                             |
-| ------------ | ------------------------------------------------------------ |
-| explanation  | Four statistical sub figure need one kinds of data.          |
-| data time    | 24h after ARDS identification                                |
-| data format  | data_label, pf_8h_min, hospital_mortality_status, 28d_mortality_status, icu_mortality_status, age, apache_score, hospital_los, icu_los, admission_diagnosis_group |
-| data example | long_stay, 9, true, true,  true, 66, 45, 8, 7, 'Sepsis'      |
+| figure name  | Characterization of ARDS cohort.                                                                                                                     |
+| ------------ |------------------------------------------------------------------------------------------------------------------------------------------------------|
+| explanation  | Four statistical sub figure need one kinds of data.                                                                                                  |
+| data time    | 24h after ARDS identification                                                                                                                        |
+| data format  | data_label, pf_8h_min, hospital_dead_status, 28d_death_status, icu_death_status, age, apache_score, hospital_los, icu_los, admission_diagnosis |
+| data example | long_stay, 9, true, true,  true, 66, 45, 8, 7, 'Sepsis'                                                                                              |
 
 ### Figure 4
 ![](https://github.com/SweeneyLi/ards/raw/master/static/img/fig4.png)

@@ -119,17 +119,17 @@ where res.patientunitstayid = 3181349
 /* find columns */
 
 -- from patient
-select patientunitstayid,
-       gender,
+select gender,
        age,
        apacheadmissiondx,
-       (case
-            when admissionheight is not null and admissionweight is not null
-                then admissionweight / (admissionheight * admissionheight * 0.0001)
-            else NULL end) as bmi,
-       hospitaladmitsource
-from patient
-limit 100;
+       admissionheight,
+       admissionweight,
+       hospitaladmitsource,
+       unitdischargeoffset,
+       unitdischargestatus,
+       hospitaldischargeoffset,
+       hospitaldischargestatus
+from patient;
 
 -- from apachepatientresult
 select patientunitstayid, apachescore
@@ -142,16 +142,16 @@ select patientunitstayid, infusionoffset, drugname
 from infusiondrug
 where infusionoffset <= 1440
   and (
-    drugname like 'vasopressin%'
-    or drugname like '%dobutamine%'
-    or drugname like '%dopamine%'
-    or drugname like '%epinephrine%'
-    or drugname like '%norepinephrine%'
-    or drugname like '%phenylephrine%'
-    or drugname like '%vasopressin%'
-    or drugname like '%warfarin%'
-    or drugname like '%heparin%'
-    or drugname like '%milrinone%'
+            drugname like 'vasopressin%'
+        or drugname like '%dobutamine%'
+        or drugname like '%dopamine%'
+        or drugname like '%epinephrine%'
+        or drugname like '%norepinephrine%'
+        or drugname like '%phenylephrine%'
+        or drugname like '%vasopressin%'
+        or drugname like '%warfarin%'
+        or drugname like '%heparin%'
+        or drugname like '%milrinone%'
     )
 limit 100;
 
@@ -162,9 +162,8 @@ from lab
 where labname in (
                   'albumin', '-bands', 'WBC x 1000', 'bilirubin', 'platelets x 1000', 'BUN', 'bicarbonate',
                   'creatinine', 'potassium', 'PTT', 'sodium', 'PT - INR', 'glucose',
-                  'paO2', 'paCO2', 'pH', 'FiO2', 'Base Excess', 'PEEP', 'FiO2','calcium',
-                 'Total CO2', 'ALT (SGPT)', 'AST (SGOT)', 'lactate', 'Hct', 'Hgb',
-
+                  'paO2', 'paCO2', 'pH', 'FiO2', 'Base Excess', 'PEEP', 'FiO2', 'calcium',
+                  'Total CO2', 'ALT (SGPT)', 'AST (SGOT)', 'lactate', 'Hct', 'Hgb',
     );
 -- ALP
 -- Basos
@@ -354,9 +353,8 @@ select patientunitstayid,
        hospitaldischargeoffset,
        hospitaldischargestatus
 from patient
-where unitdischargestatus  not in ('Alive', 'Expired')
+where unitdischargestatus not in ('Alive', 'Expired')
 limit 100;
-
 
 
 -- from apachepatientresult
