@@ -94,7 +94,7 @@ def generate_pf_list(pao2_dict, fio2_dict):
     fio2_list = sorted(fio2_dict.items(), key=lambda x: x[0])
 
     pf_list = []
-    if len(pao2_list) < 2 or len(fio2_list) < 2:
+    if len(pao2_list) < 1 or len(fio2_list) < 1:
         return pf_list
 
     time_list = sorted(list(map(lambda x: x[0], pao2_list)) + list(map(lambda x: x[0], fio2_list)))
