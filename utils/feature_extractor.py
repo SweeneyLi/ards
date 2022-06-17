@@ -19,7 +19,7 @@ class FeatureExtractor:
     @staticmethod
     def get_identification_offset(pao2_fio2_peep_info):
         # assert set(pao2_fio2_peep_info.keys()) == {'paO2', 'FiO2', 'PEEP'}
-        if  set(pao2_fio2_peep_info.keys()) != {'paO2', 'FiO2', 'PEEP'}:
+        if set(pao2_fio2_peep_info.keys()) != {'paO2', 'FiO2', 'PEEP'}:
             print('wrong', pao2_fio2_peep_info)
             return None
 
