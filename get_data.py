@@ -58,11 +58,11 @@ def save_ards_data(base_ards_data, thread_number=0):
 
     # prepare dataframe
     ards_data_column = ['icu_stay_id', 'identification_offset']
-    ards_data_column.extend(['28d_death_status', 'ards_group'])
+    ards_data_column.extend(['28d_death_status', 'ards_group', 'pf_8h_min', 'admission_diagnosis'])
 
     icu_stay_id_example = base_ards_data.iloc[0]['icu_stay_id']
     ards_data_column.extend(sql_connector.get_static_feature(icu_stay_id_example).columns)
-    ards_data_column.extend(dynamic_feature_list)
+    # ards_data_column.extend(dynamic_feature_list)
 
     ards_data = pd.DataFrame(columns=ards_data_column)
 
@@ -74,6 +74,7 @@ def save_ards_data(base_ards_data, thread_number=0):
         assert a_ards_static_feature.shape[0] == 1
 
         a_ards_static_feature['icu_stay_id'] = icu_stay_id
+        a_ards_static_feature['identification_offset'] = identification_offset
 
         # add extra static feature
         a_ards_static_feature = FeatureExtractor.add_static_feature_of_ards_data(sql_connector,
