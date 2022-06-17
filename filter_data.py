@@ -68,12 +68,35 @@ def save_valid_id_and_identification_offset(ards_data_id_list, thread_number=0):
     df = pd.DataFrame(valid_id_list, columns=['icu_stay_id', 'identification_offset'])
 
     df.to_csv(os.path.join(output_data_path,
-                           'valid_id_%d.csv' % thread_number))
+                           'ards_data_with_base_info%d.csv' % thread_number))
 
     sql_connector.close()
 
 
+def second_filter_data():
+    base_ards_ids_path = 'dataset/ards_data_with_base_info.csv'
+    valid_base_ards_ids_path = 'dataset/valid_ards_data_with_base_info.csv'
+    base_ards_data = pd.read_csv(base_ards_ids_path, index_col=0)
 
+    sql_connector = PostgresSqlConnector()
+    query = \
+        """
+        select ards_data.patientunitstayid as icu_stay_id, uniquepid, unitdischargeoffset, unitdischargestatus, hospitaldischargeoffset, hospitaldischargestatus
+        from ards_data
+        left join patient p on ards_data.patientunitstayid = p.patientunitstayid
+        """
+    ards_data = sql_connector.get_data_by_query(query)
+    sql_connector.close()
+
+    ards_data = pd.merge(base_ards_data, ards_data, on='icu_stay_id')
+    ards_data.drop(ards_data[ards_data['unitdischargestatus'] == ''].index, inplace=True)
+    ards_data.drop(
+        ards_data[(ards_data['unitdischargestatus'] == 'Alive') & (ards_data['hospitaldischargestatus'] == '')].index,
+        inplace=True)
+
+    ards_data.sort_values(['uniquepid', 'unitdischargeoffset'], ascending=False)
+    ards_data.drop_duplicates('uniquepid', keep='first', inplace=True)
+    ards_data.to_csv(valid_base_ards_ids_path, index=False)
 
 if __name__ == '__main__':
     get_base_ards_data(mult_thread=True)
