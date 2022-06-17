@@ -93,7 +93,6 @@ def save_ards_data(base_ards_data, thread_number=0):
             # get dynamic feature
             a_ards_dynamic_feature_list = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
                                                                             identification_offset + offset_24h)
-            assert a_ards_dynamic_feature_list.shape[0] == 1
             # reformat  dynamic feature
             a_ards_dynamic_feature = FeatureExtractor.reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list)
 
@@ -104,8 +103,15 @@ def save_ards_data(base_ards_data, thread_number=0):
     # print(ards_data.columns)
     # print(ards_data.iloc[:1].to_json())
     # print(ards_data)
+
+    data_name = 'ards_data_with'
+    if static_feature:
+        data_name = data_name + '_static'
+    if dynamic_feature:
+        data_name = data_name + '_dynamic'
+
     ards_data.to_csv(os.path.join(output_data_path,
-                                  'ards_data_%d.csv' % thread_number))
+                                  data_name + '_%d.csv' % thread_number))
     sql_connector.close()
 
 

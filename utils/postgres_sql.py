@@ -193,7 +193,8 @@ class PostgresSqlConnector:
                 labname         as label,
                 labresult       as value
                 from lab
-                where labresultoffset >= {start_offset}
+                where 
+                 labresultoffset >= {start_offset}
                 and labresultoffset <= {end_offset}
                 and labname in (
                 'AST (SGOT)',
@@ -239,7 +240,9 @@ class PostgresSqlConnector:
             nursingchartvalue           as value,
             nursingchartoffset          as time_offset
             from nursecharting
-            where nursingchartcelltypevallabel in (
+            where nursingchartvalue != ''
+            and nursingchartvalue != 'Unable to score due to medication'
+            and nursingchartcelltypevallabel in (
                                'Glasgow coma score', 'Score (Glasgow Coma Scale)'
             )
             and nursingchartcelltypevalname in (
@@ -264,8 +267,9 @@ class PostgresSqlConnector:
                 respchartvaluelabel as label,
                 respchartvalue      as value
                 from respiratorycharting
-                where 
-                respchartoffset >= {start_offset}
+                where
+                respchartvalue != ''
+                and respchartoffset >= {start_offset}
                 and respchartoffset <= {end_offset}
                 and respchartvaluelabel in (
                                   'Plateau Pressure'
