@@ -3,7 +3,7 @@ import operator
 import pandas as pd
 import numpy as np
 from utils.common import *
-from utils.init_config import diagnoses_dict, dynamic_feature_list
+from utils.init_config import diagnoses_dict, dynamic_feature_name_list
 from utils.postgres_sql import PostgresSqlConnector
 import operator
 
@@ -114,16 +114,10 @@ class FeatureExtractor:
 
         return a_ards_info
 
+
     @staticmethod
     def reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list):
-        dynamic_feature_column = []
-        for feature_name in dynamic_feature_list:
-            dynamic_feature_column.extend([
-                feature_name + '_median',
-                feature_name + '_variance',
-                feature_name + '_rate_change'
-            ])
-        dynamic_feature_data = pd.DataFrame(columns=dynamic_feature_column)
+        dynamic_feature_data = pd.DataFrame(columns=dynamic_feature_name_list)
         for a_ards_dynamic_feature in a_ards_dynamic_feature_list:
             feature_info_dict = reformat_data_from_dataframe_to_dict_and_remove_outlier(a_ards_dynamic_feature)
             for label, record_dict in feature_info_dict.items():

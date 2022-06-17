@@ -1,6 +1,6 @@
 import pandas as pd
 
-from utils.init_config import dynamic_feature_list
+from utils.init_config import dynamic_feature_name_list
 from utils.postgres_sql import PostgresSqlConnector
 from utils.feature_extractor import FeatureExtractor
 from tqdm import tqdm
@@ -19,7 +19,7 @@ if os.path.exists(output_data_path) is False:
 
 def get_ards_data(mult_thread=True):
     base_ards_data = pd.read_csv(base_ards_data_path)
-    # base_ards_data = base_ards_data.iloc[:1]
+    base_ards_data = base_ards_data.iloc[:1]
 
     print('There are %d base data' % len(base_ards_data))
 
@@ -67,7 +67,7 @@ def save_ards_data(base_ards_data, thread_number=0):
         ards_data_column.extend(sql_connector.get_static_feature(icu_stay_id_example).columns)
         ards_data_column.extend(['28d_death_status', 'ards_group', 'pf_8h_min', 'admission_diagnosis'])
     if dynamic_feature:
-        ards_data_column.extend(dynamic_feature_list)
+        ards_data_column.extend(dynamic_feature_name_list)
 
     ards_data = pd.DataFrame(columns=ards_data_column)
 
@@ -100,6 +100,7 @@ def save_ards_data(base_ards_data, thread_number=0):
 
             a_ards_dynamic_feature['icu_stay_id'] = icu_stay_id
 
+            print(temp, a_ards_dynamic_feature)
             temp = pd.merge(temp, a_ards_dynamic_feature)
 
         ards_data = pd.concat([ards_data, temp])
