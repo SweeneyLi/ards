@@ -213,7 +213,7 @@ class PostgresSqlConnector:
                 'Hct',
                 'Hgb',
                 'lactate',
-                'calcium',
+                'ionized calcium',
                 'Magnesium',
                 'paO2',
                 'FiO2',
