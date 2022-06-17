@@ -73,27 +73,27 @@ def save_ards_data(base_ards_data, thread_number=0):
         a_ards_static_feature = sql_connector.get_static_feature(icu_stay_id)
         assert a_ards_static_feature.shape[0] == 1
 
+        a_ards_static_feature['icu_stay_id'] = icu_stay_id
+
         # add extra static feature
         a_ards_static_feature = FeatureExtractor.add_static_feature_of_ards_data(sql_connector,
                                                                                  a_ards_static_feature,
                                                                                  icu_stay_id,
                                                                                  identification_offset)
+        ards_data.append(a_ards_static_feature)
 
-        # combine
-        # temp = pd.concat([ards_data, a_ards_static_feature], axis=0)
-
-        # get dynamic feature
-        a_ards_dynamic_feature_list = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
-                                                                        identification_offset + offset_24h)
-        assert a_ards_dynamic_feature_list.shape[0] == 1
-        # reformat  dynamic feature
-        a_ards_dynamic_feature = FeatureExtractor.reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list)
-
-        a_ards_dynamic_feature['icu_stay_id'] = icu_stay_id
-
-        temp = pd.merge(a_ards_static_feature, a_ards_dynamic_feature)
-
-        ards_data.append(temp)
+        # # get dynamic feature
+        # a_ards_dynamic_feature_list = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
+        #                                                                 identification_offset + offset_24h)
+        # assert a_ards_dynamic_feature_list.shape[0] == 1
+        # # reformat  dynamic feature
+        # a_ards_dynamic_feature = FeatureExtractor.reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list)
+        #
+        # a_ards_dynamic_feature['icu_stay_id'] = icu_stay_id
+        #
+        # temp = pd.merge(a_ards_static_feature, a_ards_dynamic_feature)
+        #
+        # ards_data.append(temp)
 
     # print(ards_data.columns)
     # print(ards_data.iloc[:1].to_json())

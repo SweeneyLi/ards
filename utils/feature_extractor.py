@@ -90,8 +90,8 @@ class FeatureExtractor:
 
         a_ards_info['admission_diagnosis'] = diagnoses_dict.get(a_ards_dict['apacheadmissiondx'], 'Other')
 
-        if a_ards_info['unitdischargestatus'] == 'Expired':
-            a_ards_info['hospitaldischargestatus'] = 'Expired'
+        if a_ards_dict['unitdischargestatus'] == 'Expired':
+            a_ards_dict['hospitaldischargestatus'] = 'Expired'
             a_ards_info['hospitaldischargeoffset'] = a_ards_dict['unitdischargeoffset']
 
         # 28d_death_status
