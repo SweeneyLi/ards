@@ -118,7 +118,7 @@ class FeatureExtractor:
     def reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list):
         dynamic_feature_column = []
         for feature_name in dynamic_feature_list:
-            dynamic_feature_column.append([
+            dynamic_feature_column.extend([
                 feature_name + '_median',
                 feature_name + '_variance',
                 feature_name + '_rate_change'

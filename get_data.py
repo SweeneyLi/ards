@@ -74,6 +74,7 @@ def save_ards_data(base_ards_data, thread_number=0):
     for index, row in tqdm(base_ards_data.iterrows(), total=base_ards_data.shape[0]):
         icu_stay_id = row['icu_stay_id']
         identification_offset = row['identification_offset']
+        temp = pd.DataFrame([[icu_stay_id, identification_offset]], columns=['icu_stay_id', 'identification_offset'])
 
         if static_feature:
             # get static feature
@@ -88,17 +89,20 @@ def save_ards_data(base_ards_data, thread_number=0):
                                                                                      a_ards_static_feature,
                                                                                      icu_stay_id,
                                                                                      identification_offset)
-            ards_data = pd.concat([ards_data, a_ards_static_feature])
+            temp = pd.merge(temp, a_ards_static_feature)
         if dynamic_feature:
             # get dynamic feature
-            a_ards_dynamic_feature_list = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
-                                                                            identification_offset + offset_24h)
+            # a_ards_dynamic_feature_list = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
+            #                                                                 identification_offset + offset_24h)
+            a_ards_dynamic_feature_list = []
             # reformat  dynamic feature
             a_ards_dynamic_feature = FeatureExtractor.reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list)
 
             a_ards_dynamic_feature['icu_stay_id'] = icu_stay_id
 
-            ards_data = pd.concat([ards_data, a_ards_dynamic_feature])
+            temp = pd.merge(temp, a_ards_dynamic_feature)
+
+        ards_data = pd.concat([ards_data, temp])
 
     # print(ards_data.columns)
     # print(ards_data.iloc[:1].to_json())
@@ -115,7 +119,7 @@ def save_ards_data(base_ards_data, thread_number=0):
     sql_connector.close()
 
 
-static_feature = False
+static_feature = True
 dynamic_feature = True
 if __name__ == '__main__':
     get_ards_data(mult_thread=False)
