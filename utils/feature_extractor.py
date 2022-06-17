@@ -20,7 +20,8 @@ class FeatureExtractor:
     def get_identification_offset(pao2_fio2_peep_info):
         # assert set(pao2_fio2_peep_info.keys()) == {'paO2', 'FiO2', 'PEEP'}
         if set(pao2_fio2_peep_info.keys()) != {'paO2', 'FiO2', 'PEEP'}:
-            print('wrong', pao2_fio2_peep_info)
+            print('[get_identification_offset] keys of pao2_fio2_peep_info',
+                  pao2_fio2_peep_info.keys())
             return None
 
         # prepare data
@@ -58,6 +59,7 @@ class FeatureExtractor:
             pf_8h_info = reformat_data_from_dataframe_to_dict_and_remove_outlier(pf_8h_data)
             # assert set(pf_8h_info.keys()) == {'paO2', 'FiO2'}
             if set(pf_8h_info.keys()) != {'paO2', 'FiO2'}:
+                print('[get_pf_8h_min] keys of pf_8h_info', pf_8h_info.keys())
                 return None
             pf_8h_list = generate_pf_list(pf_8h_info['paO2'], pf_8h_info['FiO2'])
             if len(pf_8h_list) == 0:
