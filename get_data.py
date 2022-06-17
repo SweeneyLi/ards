@@ -19,7 +19,7 @@ if os.path.exists(output_data_path) is False:
 
 def get_ards_data(mult_thread=True):
     base_ards_data = pd.read_csv(base_ards_data_path)
-    base_ards_data = base_ards_data.iloc[:1]
+    # base_ards_data = base_ards_data.iloc[:1]
 
     print('There are %d base data' % len(base_ards_data))
 
@@ -92,9 +92,9 @@ def save_ards_data(base_ards_data, thread_number=0):
             temp = pd.merge(temp, a_ards_static_feature)
         if dynamic_feature:
             # get dynamic feature
-            # a_ards_dynamic_feature_list = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
-            #                                                                 identification_offset + offset_24h)
-            a_ards_dynamic_feature_list = []
+            a_ards_dynamic_feature_list = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
+                                                                            identification_offset + offset_24h)
+            # a_ards_dynamic_feature_list = []
             # reformat  dynamic feature
             a_ards_dynamic_feature = FeatureExtractor.reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list)
 
@@ -107,10 +107,6 @@ def save_ards_data(base_ards_data, thread_number=0):
 
         ards_data = pd.concat([ards_data, temp])
 
-    # print(ards_data.columns)
-    # print(ards_data.iloc[:1].to_json())
-    # print(ards_data)
-
     data_name = 'ards_data_with'
     if static_feature:
         data_name = data_name + '_static'
@@ -122,7 +118,7 @@ def save_ards_data(base_ards_data, thread_number=0):
     sql_connector.close()
 
 
-static_feature = True
+static_feature = False
 dynamic_feature = True
 if __name__ == '__main__':
-    get_ards_data(mult_thread=False)
+    get_ards_data(mult_thread=True)
