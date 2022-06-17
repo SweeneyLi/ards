@@ -81,7 +81,7 @@ def save_ards_data(base_ards_data, thread_number=0):
                                                                                  a_ards_static_feature,
                                                                                  icu_stay_id,
                                                                                  identification_offset)
-        ards_data.append(a_ards_static_feature)
+        ards_data = ards_data.append(a_ards_static_feature)
 
         # # get dynamic feature
         # a_ards_dynamic_feature_list = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
