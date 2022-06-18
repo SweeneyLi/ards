@@ -2,6 +2,7 @@ import json
 import operator
 import pandas as pd
 import numpy as np
+from utils.data_validator import SectionValidator
 from utils.common import *
 from utils.init_config import diagnoses_dict, dynamic_feature_name_list
 from utils.postgres_sql import PostgresSqlConnector
@@ -114,22 +115,33 @@ class FeatureExtractor:
 
         return a_ards_info
 
-
     @log_time
     @staticmethod
     def reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list):
         dynamic_feature_data = pd.DataFrame(columns=dynamic_feature_name_list)
         for a_ards_dynamic_feature in a_ards_dynamic_feature_list:
-            feature_info_dict = reformat_data_from_dataframe_to_dict_and_remove_outlier(a_ards_dynamic_feature)
-            for label, record_dict in feature_info_dict.items():
-                record_list = sorted(record_dict.items(), key=lambda x: x[0])
+            # feature_format: time_offset, label, value
+            # float value
+            a_ards_dynamic_feature['value'] = a_ards_dynamic_feature['value'].astype('float')
+            # drop no valid data
+            delete_list = a_ards_dynamic_feature[
+                a_ards_dynamic_feature.apply(lambda x: not SectionValidator.is_valid(x['label'], x['value']))]
 
-                if len(record_list) == 0:
-                    continue
+            a_ards_dynamic_feature.drop(delete_list.index, inplace=True)
 
-                record_value_list = list(map(lambda x: x[1], record_list))
-                dynamic_feature_data.loc[0, label + '_media'] = np.mean(record_value_list)
-                dynamic_feature_data.loc[0, label + '_variance'] = np.var(record_value_list)
-                dynamic_feature_data.loc[0, label + '_rate_change'] = record_value_list[-1] - record_value_list[0] if len(
-                    record_value_list) > 1 else None
+            # get extra feature
+            group_feature = a_ards_dynamic_feature.group_by(['label'])
+            extra_feature = pd.merge(group_feature['value'].mean(), group_feature['value'].var(), on='label')
+            extra_feature.columns = ['mean_value', 'var_value']
+
+            temp = pd.merge(group_feature.min('time_offset'), group_feature.max('time_offset'), on='label')
+            temp = temp.apply(lambda x: x['value_y'] - x['value_x'], axis=1)
+            temp.columns = ['rate_change_value']
+
+            extra_feature = pd.merge(extra_feature, temp, on='label')
+
+            for index, row in extra_feature.iterrows():
+                dynamic_feature_data.loc[0, str(index) + '_median'] = row['mean_value']
+                dynamic_feature_data.loc[0, str(index) + '_variance'] = row['var_value']
+                dynamic_feature_data.loc[0, str(index) + '_rate_change'] = row['rate_change_value']
         return dynamic_feature_data
