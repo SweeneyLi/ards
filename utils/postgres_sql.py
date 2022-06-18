@@ -188,6 +188,7 @@ class PostgresSqlConnector:
         return data
 
     def get_lab_feature(self, icu_stay_id, start_offset, end_offset):
+        # ALP,Basos,EOs,etco2,SaO2,Magnesium can not find
         query = """
                 select labresultoffset as time_offset,
                 labname         as label,
@@ -198,8 +199,8 @@ class PostgresSqlConnector:
                 and labresultoffset <= {end_offset}
                 and labname in (
                 'AST (SGOT)',
-                'bands',
-                'bilirubin',
+                '-bands',
+                'total bilirubin',
                 'calcium',
                 'Total CO2',
                 'creatinine',
@@ -232,33 +233,57 @@ class PostgresSqlConnector:
                 )
                 
         """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
-        return self.get_data_by_query(query)
+        data = self.get_data_by_query(query)
+        data['label'].replace('-bands', 'bands', inplace=True)
+        return data
 
     def get_nurseCharting_feature(self, icu_stay_id, start_offset, end_offset):
+        # typecat, typevallabel, typevalname
+        # Other Vital Signs and Infusions,Score (Glasgow Coma Scale),Value (GCS Total)
+        # Scores, Glasgow coma score, GCS Total
+        # Scores, Glasgow coma score, [Verbal|Motor|Eyes]
+        # Vital Signs,Respiratory Rate,Respiratory Rate
+        # Other Vital Signs and Infusions,SpO2,Value
+        # Vital Signs,Temperature,Temperature (C)
+        def get_nurseCharting_feature(typecat, typevallabel, typevalname):
+            if typecat == 'Other Vital Signs and Infusions':
+                return 'GCS Total'
+            if typecat == 'Scores':
+                return {'GCS Total': 'GCS Total', 'Verbal': 'GCS Verbal', 'Motor': 'GCS Motor', 'Eyes': 'GCS Eyes'}.get(
+                    typevalname, None)
+            if typecat == 'Vital Signs':
+                return 'Respiratory Rate'
+            if typecat == 'Vital Signs':
+                return 'Temperature '
+
+            print('get_nurseCharting_feature: get wrong label\ntypecat:%s, typevallabel:%s, typevalname:%s' % (
+                typecat, typevallabel, typevalname))
+
         query = """
-            select nursingchartcelltypevalname as label,
+            select 
+            nursingchartoffset      as time_offset
+            nursingchartcelltypecat as typecat,
+            nursingchartcelltypevallabel as typevallabel,
+            nursingchartcelltypevalname as typevalname,
             nursingchartvalue           as value,
-            nursingchartoffset          as time_offset
             from nursecharting
             where nursingchartvalue != ''
             and nursingchartvalue != 'Unable to score due to medication'
-            and nursingchartcelltypevallabel in (
-                               'Glasgow coma score', 'Score (Glasgow Coma Scale)'
-            )
-            and nursingchartcelltypevalname in (
-                              'Value', 'GCS Total', 'Motor', 'Verbal', 'Eyes')
             and nursingchartcelltypecat in
-            (
-            'Scores', 'Other Vital Signs and Infusions'
-            ) and 
+            ('Scores', 'Other Vital Signs and Infusions', 'Vital Signs', 'Other Vital Signs and Infusions')            ) 
+            and nursingchartcelltypevallabel in (
+                               'Glasgow coma score', 'Score (Glasgow Coma Scale)',
+                               'SpO2', 'Temperature', 'Respiration Rate') 
+            and nursingchartcelltypevalname in ('Value', 'GCS Total', 'Motor', 'Verbal', 'Eyes')
             nursingchartoffset >= {start_offset}
             and nursingchartoffset <= {end_offset}
         """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
         data = self.get_data_by_query(query)
-        data['label'].replace('Value', 'GCS Total', inplace=True)
-        data['label'].replace('Motor', 'GCS Motor', inplace=True)
-        data['label'].replace('Verbal', 'GCS Verbal', inplace=True)
-        data['label'].replace('Eyes', 'GCS Eyes', inplace=True)
+
+        data['label'] = data.apply(
+            lambda x: get_nurseCharting_feature(x['typecat'], x['typevallabel'], x['typevalname']), axis=1)
+        data = data.loc[:, ['label', 'name', '']]
+
         return data
 
     def get_respiratoryCharting_feature(self, icu_stay_id, start_offset, end_offset):
