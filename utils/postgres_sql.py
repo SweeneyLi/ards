@@ -1,7 +1,7 @@
 import pandas as pd
 import psycopg2
 from utils.init_config import db_config
-from utils.common import reformat_feature_from_column_to_line
+from utils.common import reformat_feature_from_column_to_line, log_time
 
 __all__ = ['PostgresSqlConnector']
 
@@ -187,6 +187,7 @@ class PostgresSqlConnector:
 
         return data
 
+    @log_time
     def get_lab_feature(self, icu_stay_id, start_offset, end_offset):
         query = """
                 select labresultoffset as time_offset,
@@ -234,6 +235,7 @@ class PostgresSqlConnector:
         """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
         return self.get_data_by_query(query)
 
+    @log_time
     def get_nurseCharting_feature(self, icu_stay_id, start_offset, end_offset):
         query = """
             select nursingchartcelltypevalname as label,
@@ -261,6 +263,7 @@ class PostgresSqlConnector:
         data['label'].replace('Eyes', 'GCS Eyes', inplace=True)
         return data
 
+    @log_time
     def get_respiratoryCharting_feature(self, icu_stay_id, start_offset, end_offset):
         query = """
                 select respchartoffset as time_offset,
@@ -281,6 +284,7 @@ class PostgresSqlConnector:
         """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
         return self.get_data_by_query(query)
 
+    @log_time
     def get_vitalAperiodic_feature(self, icu_stay_id, start_offset, end_offset):
         query = """
                 select observationoffset as time_offset, noninvasivesystolic, noninvasivediastolic, noninvasivemean
@@ -291,6 +295,7 @@ class PostgresSqlConnector:
             """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
         return reformat_feature_from_column_to_line(self.get_data_by_query(query))
 
+    @log_time
     def get_vitalPeriodic_feature(self, icu_stay_id, start_offset, end_offset):
         query = """
                     select observationoffset as time_offset,
