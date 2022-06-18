@@ -18,6 +18,7 @@ if os.path.exists(output_data_path) is False:
 
 def get_ards_data(mult_thread=True):
     base_ards_data = pd.read_csv(base_ards_data_path)
+    # base_ards_data = base_ards_data.iloc[[7984, 7986], :]
     if test_mode:
         base_ards_data = base_ards_data.iloc[:1]
 
@@ -92,11 +93,11 @@ def save_ards_data(base_ards_data, thread_number=0):
             temp = pd.merge(temp, a_ards_static_feature)
         if dynamic_feature:
             # get dynamic feature
-            a_ards_dynamic_feature_list = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
+            a_ards_dynamic_feature_dict = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
                                                                             identification_offset + offset_24h)
             # a_ards_dynamic_feature_list = []
             # reformat  dynamic feature
-            a_ards_dynamic_feature = FeatureExtractor.reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list)
+            a_ards_dynamic_feature = FeatureExtractor.reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_dict)
 
             a_ards_dynamic_feature.loc[0, 'icu_stay_id'] = icu_stay_id
 
@@ -126,3 +127,4 @@ else:
 
 if __name__ == '__main__':
     get_ards_data(mult_thread=mult_thread)
+    print('End')

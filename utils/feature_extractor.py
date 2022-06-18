@@ -116,10 +116,24 @@ class FeatureExtractor:
         return a_ards_info
 
     @staticmethod
-    @log_time
-    def reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list):
+    # @log_time
+    def reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_dict):
         dynamic_feature_data = pd.DataFrame(columns=dynamic_feature_name_list)
-        for a_ards_dynamic_feature in a_ards_dynamic_feature_list:
+
+        # p/f ratio
+        lab_feature = a_ards_dynamic_feature_dict['lab']
+        p_f_info = reformat_data_from_dataframe_to_dict_and_remove_outlier(
+            lab_feature[(lab_feature['label'] == 'paO2') | (lab_feature['label'] == 'FiO2')])
+        # generate p/f
+        if set(p_f_info.keys()) == {'paO2', 'FiO2'} and \
+                len(p_f_info['paO2'].keys()) >= 2 and len(p_f_info['FiO2'].keys()) >= 2:
+            p_f_info = pd.DataFrame(generate_pf_list(p_f_info['paO2'], p_f_info['FiO2']),
+                                    columns=['time_offset', 'value'])
+            p_f_info.loc[:, 'label'] = 'P/F ratio'
+            a_ards_dynamic_feature_dict['P/F ratio'] = p_f_info
+        # print('pf:', p_f_info)
+
+        for a_ards_dynamic_feature in a_ards_dynamic_feature_dict.values():
             # feature_format: time_offset, label, value
             # float value
             a_ards_dynamic_feature['value'] = a_ards_dynamic_feature['value'].astype('float')
@@ -130,14 +144,14 @@ class FeatureExtractor:
             a_ards_dynamic_feature.drop(delete_list.index, inplace=True)
 
             # get extra feature
+            # mean and var
             group_feature = a_ards_dynamic_feature.groupby(['label'])
             extra_feature = pd.merge(group_feature['value'].mean(), group_feature['value'].var(), on='label')
             extra_feature.columns = ['mean_value', 'var_value']
-
+            # rate_change
             temp = pd.merge(group_feature.min('time_offset'), group_feature.max('time_offset'), on='label')
             temp = temp.apply(lambda x: x['value_y'] - x['value_x'], axis=1)
             temp.name = 'rate_change_value'
-
             extra_feature = pd.merge(extra_feature, temp, on='label')
 
             for index, row in extra_feature.iterrows():

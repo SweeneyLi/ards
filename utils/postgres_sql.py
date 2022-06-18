@@ -177,14 +177,15 @@ class PostgresSqlConnector:
             data.loc[0] = [0 for i in range(10)]
         return data
 
-    @log_time
+    # @log_time
     def get_dynamic_feature(self, icu_stay_id, start_offset, end_offset):
-        data = [self.get_lab_feature(icu_stay_id, start_offset, end_offset),
-                self.get_nurseCharting_feature(icu_stay_id, start_offset, end_offset),
-                self.get_respiratoryCharting_feature(icu_stay_id, start_offset, end_offset),
-                self.get_vitalAperiodic_feature(icu_stay_id, start_offset, end_offset),
-                self.get_vitalPeriodic_feature(icu_stay_id, start_offset, end_offset),
-                ]
+        data = {
+            'lab': self.get_lab_feature(icu_stay_id, start_offset, end_offset),
+            'nurseCharting': self.get_nurseCharting_feature(icu_stay_id, start_offset, end_offset),
+            'respiratoryCharting': self.get_respiratoryCharting_feature(icu_stay_id, start_offset, end_offset),
+            'vitalAperiodic': self.get_vitalAperiodic_feature(icu_stay_id, start_offset, end_offset),
+            'vitalPeriodic': self.get_vitalPeriodic_feature(icu_stay_id, start_offset, end_offset),
+        }
 
         return data
 
@@ -248,19 +249,23 @@ class PostgresSqlConnector:
         # Other Vital Signs and Infusions,Score (Glasgow Coma Scale),Value (GCS Total)
         # Scores, Glasgow coma score, GCS Total
         # Scores, Glasgow coma score, [Verbal|Motor|Eyes]
-        # Vital Signs,Respiratory Rate,Respiratory Rate
         # Other Vital Signs and Infusions,SpO2,Value
+        # Vital Signs,Respiratory Rate,Respiratory Rate
         # Vital Signs,Temperature,Temperature (C)
         def get_nurseCharting_feature(typecat, typevallabel, typevalname):
             if typecat == 'Other Vital Signs and Infusions':
-                return 'GCS Total'
+                if typevallabel == 'Score (Glasgow Coma Scale)':
+                    return 'GCS Total'
+                if typevallabel == 'SpO2':
+                    return 'SpO2'
             if typecat == 'Scores':
                 return {'GCS Total': 'GCS Total', 'Verbal': 'GCS Verbal', 'Motor': 'GCS Motor', 'Eyes': 'GCS Eyes'}.get(
                     typevalname, None)
             if typecat == 'Vital Signs':
-                return 'Respiratory Rate'
-            if typecat == 'Vital Signs':
-                return 'Temperature '
+                if typevallabel == 'Respiratory Rate':
+                    return 'Respiratory Rate'
+                if typevallabel == 'Temperature':
+                    return 'Temperature'
 
             print('get_nurseCharting_feature: get wrong label\ntypecat:%s, typevallabel:%s, typevalname:%s' % (
                 typecat, typevallabel, typevalname))
@@ -276,9 +281,9 @@ class PostgresSqlConnector:
             where nursingchartvalue != ''
             and nursingchartvalue != 'Unable to score due to medication'
             and nursingchartcelltypecat in
-            ('Scores', 'Other Vital Signs and Infusions', 'Vital Signs', 'Other Vital Signs and Infusions') 
-            and nursingchartcelltypevallabel in ('Glasgow coma score', 'Score (Glasgow Coma Scale)','SpO2', 'Temperature', 'Respiration Rate') 
-            and nursingchartcelltypevalname in ('Value', 'GCS Total', 'Motor', 'Verbal', 'Eyes')
+            ('Scores', 'Other Vital Signs and Infusions', 'Vital Signs') 
+            and nursingchartcelltypevallabel in ('Glasgow coma score', 'Score (Glasgow Coma Scale)','SpO2', 'Temperature', 'Respiratory Rate') 
+            and nursingchartcelltypevalname in ('Value', 'GCS Total', 'Motor', 'Verbal', 'Eyes', 'Respiratory Rate', 'Temperature (C)')
             and nursingchartoffset >= {start_offset}
             and nursingchartoffset <= {end_offset}
         """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
@@ -301,8 +306,8 @@ class PostgresSqlConnector:
                 and respchartoffset >= {start_offset}
                 and respchartoffset <= {end_offset}
                 and respchartvaluelabel in (
-                                  'Plateau Pressure'
-                                      'Peak Insp. Pressure',
+                                  'Plateau Pressure', 
+                                  'Peak Insp. Pressure',
                                   'Mean Airway Pressure',
                                   'PEEP',
                                   'TV/kg IBW',
