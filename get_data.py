@@ -16,19 +16,16 @@ if os.path.exists(output_data_path) is False:
     os.mkdir(output_data_path)
 
 
-def get_ards_data(mult_thread=True):
-    base_ards_data = pd.read_csv(base_ards_data_path)
-    # base_ards_data = base_ards_data.iloc[[7984, 7986], :]
-    base_ards_data = base_ards_data.iloc[:100, :]
+def get_ards_data(base_ards_data, mult_thread=1):
     if test_mode:
         base_ards_data = base_ards_data.iloc[:1]
 
     print('There are %d records' % len(base_ards_data))
 
-    if not mult_thread:
+    if mult_thread == 1:
         save_ards_data(base_ards_data)
     else:
-        mult_thread_save_ards_data(base_ards_data, 4)
+        mult_thread_save_ards_data(base_ards_data, mult_thread)
 
 
 def mult_thread_save_ards_data(thread_data, thread_number):
@@ -55,6 +52,7 @@ def mult_thread_save_ards_data(thread_data, thread_number):
 
 
 def save_ards_data(base_ards_data, thread_number=0):
+    global data_name
     global static_feature
     global dynamic_feature
 
@@ -107,7 +105,6 @@ def save_ards_data(base_ards_data, thread_number=0):
 
         ards_data = pd.concat([ards_data, temp])
 
-    data_name = 'ards_data_with'
     if static_feature:
         data_name = data_name + '_static'
     if dynamic_feature:
@@ -118,14 +115,26 @@ def save_ards_data(base_ards_data, thread_number=0):
     sql_connector.close()
 
 
-test_mode = True
+test_mode = False
 static_feature = False
 dynamic_feature = True
+# 1: 391s
+# 4:
+#
 if test_mode:
-    mult_thread = False
+    mult_thread = 1
 else:
-    mult_thread = False
+    mult_thread = 1
+
+start_index = 100
+end_index = 150
+data_name = 'ards_data'
+if start_index:
+    data_name += '_%d_to_%d' % (start_index, end_index)
 
 if __name__ == '__main__':
-    get_ards_data(mult_thread=mult_thread)
+    # base_ards_data = base_ards_data.iloc[[7984, 7986], :]
+    base_ards_data = pd.read_csv(base_ards_data_path)
+    base_ards_data = base_ards_data.iloc[start_index:end_index, :]
+    get_ards_data(base_ards_data=base_ards_data, mult_thread=mult_thread)
     print('End')

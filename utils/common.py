@@ -27,7 +27,7 @@ def log_time(func):
         start_time = time.time()
         print("\n[%30s] startTime: %s" % (
             (' ' + func.__name__).rjust(30, '>'), time_format(start_time),))
-        print("args: ", args, kw)
+        # print("args: ", args, kw)
         try:
             return func(*args, **kw)
         finally:
