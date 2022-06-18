@@ -19,10 +19,11 @@ if os.path.exists(output_data_path) is False:
 def get_ards_data(mult_thread=True):
     base_ards_data = pd.read_csv(base_ards_data_path)
     # base_ards_data = base_ards_data.iloc[[7984, 7986], :]
+    base_ards_data = base_ards_data.iloc[:100, :]
     if test_mode:
         base_ards_data = base_ards_data.iloc[:1]
 
-    print('There are %d base data' % len(base_ards_data))
+    print('There are %d records' % len(base_ards_data))
 
     if not mult_thread:
         save_ards_data(base_ards_data)
