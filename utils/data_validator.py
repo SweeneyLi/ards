@@ -48,13 +48,14 @@ class SectionValidator:
 
     @staticmethod
     def is_valid(name, value):
-        if not SectionValidator.section_validator_dict.get(name, None):
-            # print(name, dynamic_range_dict.keys())
-            if name not in dynamic_range_dict.keys():
-                print(name, dynamic_range_dict.keys())
-            assert name in dynamic_range_dict.keys()
-            SectionValidator.section_validator_dict[name] = SectionValidator.base_section_validator_constructor(
-                dynamic_range_dict[name])
+        if SectionValidator.section_validator_dict.get(name, None):
+            return SectionValidator.section_validator_dict[name].is_valid(value)
+
+        if name not in dynamic_range_dict.keys():
+            print('SectionValidator: name not valid\nname:%s, valid_keys:%s)' % (name, str(dynamic_range_dict.keys())))
+        assert name in dynamic_range_dict.keys()
+        SectionValidator.section_validator_dict[name] = SectionValidator.base_section_validator_constructor(
+            dynamic_range_dict[name])
         return SectionValidator.section_validator_dict[name].is_valid(value)
 
 

@@ -115,8 +115,8 @@ class FeatureExtractor:
 
         return a_ards_info
 
-    # @log_time
     @staticmethod
+    @log_time
     def reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list):
         dynamic_feature_data = pd.DataFrame(columns=dynamic_feature_name_list)
         for a_ards_dynamic_feature in a_ards_dynamic_feature_list:

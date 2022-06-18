@@ -7,7 +7,6 @@ from tqdm import tqdm
 import datetime
 import os
 import threading
-import json
 
 base_ards_data_path = './dataset/valid_ards_data_with_base_info.csv'
 
@@ -117,13 +116,13 @@ def save_ards_data(base_ards_data, thread_number=0):
     sql_connector.close()
 
 
-test_mode = False
+test_mode = True
 static_feature = False
 dynamic_feature = True
 if test_mode:
     mult_thread = False
 else:
-    mult_thread = True
+    mult_thread = False
 
 if __name__ == '__main__':
     get_ards_data(mult_thread=mult_thread)

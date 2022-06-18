@@ -177,6 +177,7 @@ class PostgresSqlConnector:
             data.loc[0] = [0 for i in range(10)]
         return data
 
+    @log_time
     def get_dynamic_feature(self, icu_stay_id, start_offset, end_offset):
         data = [self.get_lab_feature(icu_stay_id, start_offset, end_offset),
                 self.get_nurseCharting_feature(icu_stay_id, start_offset, end_offset),
@@ -188,7 +189,7 @@ class PostgresSqlConnector:
         return data
 
     def get_lab_feature(self, icu_stay_id, start_offset, end_offset):
-        # ALP,Basos,EOs,etco2,SaO2,Magnesium can not find
+        # ALP can not find
         query = """
                 select labresultoffset as time_offset,
                 labname         as label,
@@ -198,6 +199,9 @@ class PostgresSqlConnector:
                  labresultoffset >= {start_offset}
                 and labresultoffset <= {end_offset}
                 and labname in (
+                '-eos',
+                'magnesium',
+                '-basos',
                 'AST (SGOT)',
                 '-bands',
                 'total bilirubin',
@@ -235,6 +239,8 @@ class PostgresSqlConnector:
         """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
         data = self.get_data_by_query(query)
         data['label'].replace('-bands', 'bands', inplace=True)
+        data['label'].replace('-basos', 'basos', inplace=True)
+        data['label'].replace('-eos', 'eos', inplace=True)
         return data
 
     def get_nurseCharting_feature(self, icu_stay_id, start_offset, end_offset):
@@ -261,28 +267,26 @@ class PostgresSqlConnector:
 
         query = """
             select 
-            nursingchartoffset      as time_offset
+            nursingchartoffset      as time_offset,
             nursingchartcelltypecat as typecat,
             nursingchartcelltypevallabel as typevallabel,
             nursingchartcelltypevalname as typevalname,
-            nursingchartvalue           as value,
+            nursingchartvalue           as value
             from nursecharting
             where nursingchartvalue != ''
             and nursingchartvalue != 'Unable to score due to medication'
             and nursingchartcelltypecat in
-            ('Scores', 'Other Vital Signs and Infusions', 'Vital Signs', 'Other Vital Signs and Infusions')            ) 
-            and nursingchartcelltypevallabel in (
-                               'Glasgow coma score', 'Score (Glasgow Coma Scale)',
-                               'SpO2', 'Temperature', 'Respiration Rate') 
+            ('Scores', 'Other Vital Signs and Infusions', 'Vital Signs', 'Other Vital Signs and Infusions') 
+            and nursingchartcelltypevallabel in ('Glasgow coma score', 'Score (Glasgow Coma Scale)','SpO2', 'Temperature', 'Respiration Rate') 
             and nursingchartcelltypevalname in ('Value', 'GCS Total', 'Motor', 'Verbal', 'Eyes')
-            nursingchartoffset >= {start_offset}
+            and nursingchartoffset >= {start_offset}
             and nursingchartoffset <= {end_offset}
         """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
         data = self.get_data_by_query(query)
 
         data['label'] = data.apply(
             lambda x: get_nurseCharting_feature(x['typecat'], x['typevallabel'], x['typevalname']), axis=1)
-        data = data.loc[:, ['label', 'name', '']]
+        data = data.loc[:, ['time_offset', 'label', 'value']]
 
         return data
 
@@ -301,10 +305,13 @@ class PostgresSqlConnector:
                                       'Peak Insp. Pressure',
                                   'Mean Airway Pressure',
                                   'PEEP',
-                                  'TV/kg IBW'
+                                  'TV/kg IBW',
+                                  'SaO2', 'EtCO2'
                 )
         """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
-        return self.get_data_by_query(query)
+        data = self.get_data_by_query(query)
+        data['label'].replace('EtCO2', 'etco2', inplace=True)
+        return data
 
     def get_vitalAperiodic_feature(self, icu_stay_id, start_offset, end_offset):
         query = """
