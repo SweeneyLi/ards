@@ -115,7 +115,7 @@ class FeatureExtractor:
 
         return a_ards_info
 
-    @log_time
+    # @log_time
     @staticmethod
     def reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list):
         dynamic_feature_data = pd.DataFrame(columns=dynamic_feature_name_list)
@@ -125,18 +125,18 @@ class FeatureExtractor:
             a_ards_dynamic_feature['value'] = a_ards_dynamic_feature['value'].astype('float')
             # drop no valid data
             delete_list = a_ards_dynamic_feature[
-                a_ards_dynamic_feature.apply(lambda x: not SectionValidator.is_valid(x['label'], x['value']))]
+                a_ards_dynamic_feature.apply(lambda x: not SectionValidator.is_valid(x['label'], x['value']), axis=1)]
 
             a_ards_dynamic_feature.drop(delete_list.index, inplace=True)
 
             # get extra feature
-            group_feature = a_ards_dynamic_feature.group_by(['label'])
+            group_feature = a_ards_dynamic_feature.groupby(['label'])
             extra_feature = pd.merge(group_feature['value'].mean(), group_feature['value'].var(), on='label')
             extra_feature.columns = ['mean_value', 'var_value']
 
             temp = pd.merge(group_feature.min('time_offset'), group_feature.max('time_offset'), on='label')
             temp = temp.apply(lambda x: x['value_y'] - x['value_x'], axis=1)
-            temp.columns = ['rate_change_value']
+            temp.name = 'rate_change_value'
 
             extra_feature = pd.merge(extra_feature, temp, on='label')
 

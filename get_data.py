@@ -19,7 +19,8 @@ if os.path.exists(output_data_path) is False:
 
 def get_ards_data(mult_thread=True):
     base_ards_data = pd.read_csv(base_ards_data_path)
-    base_ards_data = base_ards_data.iloc[:1]
+    if test_mode:
+        base_ards_data = base_ards_data.iloc[:1]
 
     print('There are %d base data' % len(base_ards_data))
 
@@ -116,7 +117,13 @@ def save_ards_data(base_ards_data, thread_number=0):
     sql_connector.close()
 
 
+test_mode = False
 static_feature = False
 dynamic_feature = True
+if test_mode:
+    mult_thread = False
+else:
+    mult_thread = True
+
 if __name__ == '__main__':
-    get_ards_data(mult_thread=False)
+    get_ards_data(mult_thread=mult_thread)
