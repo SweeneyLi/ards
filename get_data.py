@@ -98,11 +98,9 @@ def save_ards_data(base_ards_data, thread_number=0):
             # reformat  dynamic feature
             a_ards_dynamic_feature = FeatureExtractor.reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_list)
 
-            if a_ards_dynamic_feature.shape[0] == 0:
-                a_ards_dynamic_feature.loc[0] = None
-            a_ards_dynamic_feature['icu_stay_id'] = icu_stay_id
+            a_ards_dynamic_feature.loc[0, 'icu_stay_id'] = icu_stay_id
 
-            print(temp, a_ards_dynamic_feature)
+            # print(temp, a_ards_dynamic_feature)
             temp = pd.merge(temp, a_ards_dynamic_feature, on='icu_stay_id')
 
         ards_data = pd.concat([ards_data, temp])
