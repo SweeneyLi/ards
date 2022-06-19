@@ -116,6 +116,7 @@ class PostgresSqlConnector:
                     admissionheight,
                     admissionweight,
                     hospitaladmitsource,
+                    hospitalAdmitOffset,
                     unitdischargeoffset,
                     unitdischargestatus,
                     hospitaldischargeoffset,

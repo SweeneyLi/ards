@@ -1,25 +1,14 @@
+import os
 import pandas as pd
-
+from tqdm import tqdm
+import datetime
+import threading
 from utils.init_config import dynamic_feature_name_list
 from utils.postgres_sql import PostgresSqlConnector
 from utils.feature_extractor import FeatureExtractor
-from tqdm import tqdm
-import datetime
-import os
-import threading
-
-base_ards_data_path = './dataset/valid_ards_data_with_base_info.csv'
-
-output_path = './output'
-output_data_path = './output/ards_data'
-if os.path.exists(output_data_path) is False:
-    os.mkdir(output_data_path)
 
 
 def get_ards_data(base_ards_data, mult_thread=1):
-    if test_mode:
-        base_ards_data = base_ards_data.iloc[:1]
-
     print('There are %d records' % len(base_ards_data))
 
     if mult_thread == 1:
@@ -94,7 +83,6 @@ def save_ards_data(base_ards_data, thread_number=0):
             # get dynamic feature
             a_ards_dynamic_feature_dict = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
                                                                             identification_offset + offset_24h)
-            # a_ards_dynamic_feature_list = []
             # reformat  dynamic feature
             a_ards_dynamic_feature = FeatureExtractor.reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_dict)
 
@@ -115,19 +103,20 @@ def save_ards_data(base_ards_data, thread_number=0):
     sql_connector.close()
 
 
+base_ards_data_path = './dataset/valid_ards_data_with_base_info.csv'
+output_path = './output'
+output_data_path = './output/ards_data'
+if os.path.exists(output_data_path) is False:
+    os.mkdir(output_data_path)
+
 test_mode = False
 static_feature = False
 dynamic_feature = True
-# 1: 391s
-# 4:
-#
-if test_mode:
-    mult_thread = 1
-else:
-    mult_thread = 1
+mult_thread = 1
 
 start_index = 250
 end_index = 300
+
 data_name = 'ards_data'
 if start_index:
     data_name += '_%d_to_%d' % (start_index, end_index)
@@ -136,5 +125,8 @@ if __name__ == '__main__':
     # base_ards_data = base_ards_data.iloc[[7984, 7986], :]
     base_ards_data = pd.read_csv(base_ards_data_path)
     base_ards_data = base_ards_data.iloc[start_index:end_index, :]
+    if test_mode:
+        base_ards_data = base_ards_data.iloc[:1]
+
     get_ards_data(base_ards_data=base_ards_data, mult_thread=mult_thread)
     print('End')

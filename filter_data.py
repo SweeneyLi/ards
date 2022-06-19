@@ -11,9 +11,8 @@ import threading
 output_path = './output'
 output_data_path = './output/base_data'
 
-
-# assert os.path.exists(output_data_path) is False
-# os.mkdir(output_data_path)
+if os.path.exists(output_data_path) is False:
+    os.mkdir(output_data_path)
 
 
 def get_base_ards_data(mult_thread=True):
@@ -97,6 +96,7 @@ def second_filter_data():
     ards_data.sort_values(['uniquepid', 'unitdischargeoffset'], ascending=False)
     ards_data.drop_duplicates('uniquepid', keep='first', inplace=True)
     ards_data.to_csv(valid_base_ards_ids_path, index=False)
+
 
 if __name__ == '__main__':
     get_base_ards_data(mult_thread=True)
