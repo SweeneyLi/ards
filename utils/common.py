@@ -1,9 +1,16 @@
 import os
 import pandas as pd
+import numpy as np
 from utils.data_validator import SectionValidator
 
-__all__ = ['log_time', 'is_number', 'combine_csvs', 'generate_pf_list', 'get_continuous_offset',
+__all__ = ['log_time', 'convert_number', 'is_number', 'combine_csvs', 'generate_pf_list', 'get_continuous_offset',
            'reformat_data_from_dataframe_to_dict_and_remove_outlier', 'reformat_feature_from_column_to_line']
+
+
+def convert_number(value):
+    if is_number(value):
+        return np.float(value)
+    return None
 
 
 def is_number(s):

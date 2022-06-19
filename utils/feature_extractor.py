@@ -136,7 +136,7 @@ class FeatureExtractor:
         for a_ards_dynamic_feature in a_ards_dynamic_feature_dict.values():
             # feature_format: time_offset, label, value
             # float value
-            a_ards_dynamic_feature['value'] = a_ards_dynamic_feature['value'].astype('float')
+            a_ards_dynamic_feature['value'] = a_ards_dynamic_feature['value'].map(convert_number)
             # drop no valid data
             delete_list = a_ards_dynamic_feature[
                 a_ards_dynamic_feature.apply(lambda x: not SectionValidator.is_valid(x['label'], x['value']), axis=1)]

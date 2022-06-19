@@ -126,8 +126,8 @@ if test_mode:
 else:
     mult_thread = 1
 
-start_index = 100
-end_index = 150
+start_index = 250
+end_index = 300
 data_name = 'ards_data'
 if start_index:
     data_name += '_%d_to_%d' % (start_index, end_index)
