@@ -60,38 +60,43 @@ def save_ards_data(base_ards_data, thread_number=0):
 
     ards_data = pd.DataFrame(columns=ards_data_column)
 
+    error_index_list = []
     for index, row in tqdm(base_ards_data.iterrows(), total=base_ards_data.shape[0]):
         icu_stay_id = row['icu_stay_id']
         identification_offset = row['identification_offset']
         temp = pd.DataFrame([[icu_stay_id, identification_offset]], columns=['icu_stay_id', 'identification_offset'])
+        try:
+            if static_feature:
+                # get static feature
+                a_ards_static_feature = sql_connector.get_static_feature(icu_stay_id)
+                assert a_ards_static_feature.shape[0] == 1
 
-        if static_feature:
-            # get static feature
-            a_ards_static_feature = sql_connector.get_static_feature(icu_stay_id)
-            assert a_ards_static_feature.shape[0] == 1
+                a_ards_static_feature['icu_stay_id'] = icu_stay_id
+                a_ards_static_feature['identification_offset'] = identification_offset
 
-            a_ards_static_feature['icu_stay_id'] = icu_stay_id
-            a_ards_static_feature['identification_offset'] = identification_offset
+                # add extra static feature
+                a_ards_static_feature = FeatureExtractor.add_static_feature_of_ards_data(sql_connector,
+                                                                                         a_ards_static_feature,
+                                                                                         icu_stay_id,
+                                                                                         identification_offset)
+                temp = pd.merge(temp, a_ards_static_feature)
+            if dynamic_feature:
+                # get dynamic feature
+                a_ards_dynamic_feature_dict = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
+                                                                                identification_offset + offset_24h)
+                # reformat  dynamic feature
+                a_ards_dynamic_feature = FeatureExtractor.reformat_dynamic_feature_of_ards_data(
+                    a_ards_dynamic_feature_dict)
 
-            # add extra static feature
-            a_ards_static_feature = FeatureExtractor.add_static_feature_of_ards_data(sql_connector,
-                                                                                     a_ards_static_feature,
-                                                                                     icu_stay_id,
-                                                                                     identification_offset)
-            temp = pd.merge(temp, a_ards_static_feature)
-        if dynamic_feature:
-            # get dynamic feature
-            a_ards_dynamic_feature_dict = sql_connector.get_dynamic_feature(icu_stay_id, identification_offset,
-                                                                            identification_offset + offset_24h)
-            # reformat  dynamic feature
-            a_ards_dynamic_feature = FeatureExtractor.reformat_dynamic_feature_of_ards_data(a_ards_dynamic_feature_dict)
+                a_ards_dynamic_feature.loc[0, 'icu_stay_id'] = icu_stay_id
 
-            a_ards_dynamic_feature.loc[0, 'icu_stay_id'] = icu_stay_id
+                # print(temp, a_ards_dynamic_feature)
+                temp = pd.merge(temp, a_ards_dynamic_feature, on='icu_stay_id')
 
-            # print(temp, a_ards_dynamic_feature)
-            temp = pd.merge(temp, a_ards_dynamic_feature, on='icu_stay_id')
-
-        ards_data = pd.concat([ards_data, temp])
+            ards_data = pd.concat([ards_data, temp])
+        except:
+            print('Error!!! icu_stay_id: %d' % icu_stay_id)
+            error_index_list.append([icu_stay_id])
 
     if static_feature:
         data_name = data_name + '_static'
@@ -100,6 +105,10 @@ def save_ards_data(base_ards_data, thread_number=0):
 
     ards_data.to_csv(os.path.join(output_data_path,
                                   data_name + '_%d.csv' % thread_number), index=False)
+
+    print('Error list:\n', error_index_list)
+    pd.DataFrame(error_index_list, columns='icu_stay_id').to_csv('error_%d.csv' % thread_number, index=False)
+
     sql_connector.close()
 
 
@@ -112,10 +121,10 @@ if os.path.exists(output_data_path) is False:
 test_mode = False
 static_feature = False
 dynamic_feature = True
-mult_thread = 1
+mult_thread = 8
 
-start_index = 550
-end_index = 600
+start_index = 500
+end_index = 1000
 
 data_name = 'ards_data'
 if start_index:
