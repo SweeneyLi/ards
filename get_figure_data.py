@@ -122,12 +122,12 @@ def get_fig4_data():
     ards_data.to_csv(output_data_path, index=False)
 
 
-def get_lab_feature(lab_feature_list):
+def get_lab_feature(lab_feature_list=None):
     if lab_feature_list is None:
         lab_feature_list = ['pH', 'lactate', 'bicarbonate']
-    fig3_lab_data = 'dataset/figure_data/fig5_lab_data.csv'
-    if os.path.exists(fig3_lab_data):
-        return pd.read_csv(fig3_lab_data)
+    fig5_lab_data = 'dataset/figure_data/fig5_lab_data.csv'
+    if os.path.exists(fig5_lab_data):
+        return pd.read_csv(fig5_lab_data)
 
     global output_path
     output_lab_data_path = os.path.join(output_path, 'fig5_lab_data.csv')
@@ -149,7 +149,7 @@ def get_lab_feature(lab_feature_list):
 
         temp['icu_stay_id'] = icu_stay_id
         temp['ards_group'] = ards_group
-
+        temp['ards_offset'] = temp['time_offset'].map(lambda x: x - identification_offset)
         lab_data = pd.concat([lab_data, temp])
         lab_data.to_csv(output_lab_data_path, index=False)
     return lab_data
@@ -157,11 +157,24 @@ def get_lab_feature(lab_feature_list):
 
 def get_fig5_data():
     global output_path
-    output_data_path = os.path.join(output_path, 'fig3_data.csv')
+    output_data_path = os.path.join(output_path, 'fig5_data.csv')
     lab_feature_list = ['pH', 'lactate', 'bicarbonate']
+
+    # get lab data
     lab_data = get_lab_feature(lab_feature_list)
+
+    # reformat data
+    lab_data['offset_15m'] = lab_data.apply(lambda x: int((x['time_offset'] - x['identification_offset']) / 15) / 4,
+                                            axis=1)
+    lab_data = lab_data.loc[:, ['ards_group', 'label', 'offset_15m', 'value']]
+
+    # group data
+    lab_group_data = lab_data.groupby(['label', 'ards_group', 'offset_15m']).median('value')
+    lab_group_data.to_csv(output_data_path)
 
 
 if __name__ == '__main__':
     # get_fig3_data()
-    get_fig4_data()
+    # get_fig4_data()
+    get_fig5_data()
+    print('End')
