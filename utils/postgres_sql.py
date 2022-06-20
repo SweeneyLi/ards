@@ -198,6 +198,7 @@ class PostgresSqlConnector:
                 labresult       as value
                 from lab
                 where 
+                patientunitstayid={icu_stay_id}
                  labresultoffset >= {start_offset}
                 and labresultoffset <= {end_offset}
                 and labname in (
@@ -279,7 +280,9 @@ class PostgresSqlConnector:
             nursingchartcelltypevalname as typevalname,
             nursingchartvalue           as value
             from nursecharting
-            where nursingchartvalue != ''
+            where 
+            patientunitstayid={icu_stay_id}
+            and nursingchartvalue != ''
             and nursingchartvalue != 'Unable to score due to medication'
             and nursingchartcelltypecat in
             ('Scores', 'Other Vital Signs and Infusions', 'Vital Signs') 
@@ -303,7 +306,8 @@ class PostgresSqlConnector:
                 respchartvalue      as value
                 from respiratorycharting
                 where
-                respchartvalue != ''
+                patientunitstayid={icu_stay_id}
+                and respchartvalue != ''
                 and respchartoffset >= {start_offset}
                 and respchartoffset <= {end_offset}
                 and respchartvaluelabel in (
@@ -344,7 +348,7 @@ class PostgresSqlConnector:
                     from vitalperiodic
                     where observationoffset >= {start_offset}
                     and observationoffset <= {end_offset}
-                    and patientunitstayid = {icu_stay_id};
+                    and pati±entunitstayid = {icu_stay_id};
             """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
         return reformat_feature_from_column_to_line(self.get_data_by_query(query))
 
@@ -375,6 +379,63 @@ class PostgresSqlConnector:
             """.format(icu_stay_id=icu_stay_id, identification_offset=identification_offset)
 
         return self.get_data_by_query(query)
+
+    def get_special_lab_feature(self, icu_stay_id, start_offset, end_offset, labname=[]):
+        if len(labname) == 0:
+            return pd.DataFrame()
+
+        query = """
+                select labresultoffset as time_offset,
+                labname         as label,
+                labresult       as value
+                from lab
+                where 
+                 labresultoffset >= {start_offset}
+                and labresultoffset <= {end_offset}
+                and labname in (
+                '-eos',
+                'magnesium',
+                '-basos',
+                'AST (SGOT)',
+                '-bands',
+                'total bilirubin',
+                'calcium',
+                'Total CO2',
+                'creatinine',
+                'paCO2',
+                'potassium',
+                'PTT',
+                'SaO2',
+                'sodium',
+                'WBC x 1000',
+                'glucose',
+                'Hct',
+                'Hgb',
+                'lactate',
+                'ionized calcium',
+                'Magnesium',
+                'paO2',
+                'FiO2',
+                'P/F ratio',
+                'albumin',
+                'platelets x 1000',
+                'bicarbonate',
+                'BUN',
+                'Base Excess',
+                'ALT (SGPT)',
+                'ALP',
+                'pH',
+                'PT - INR',
+                'Basos',
+                'EOs'
+                )
+
+        """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
+        data = self.get_data_by_query(query)
+        data['label'].replace('-bands', 'bands', inplace=True)
+        data['label'].replace('-basos', 'basos', inplace=True)
+        data['label'].replace('-eos', 'eos', inplace=True)
+        return data
 
 
 if __name__ == '__main__':
