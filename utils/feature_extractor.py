@@ -146,7 +146,7 @@ class FeatureExtractor:
             # get extra feature
             # mean and var
             group_feature = a_ards_dynamic_feature.groupby(['label'])
-            extra_feature = pd.merge(group_feature['value'].mean(), group_feature['value'].var(), on='label')
+            extra_feature = pd.merge(group_feature['value'].median(), group_feature['value'].var(), on='label')
             extra_feature.columns = ['mean_value', 'var_value']
             # rate_change
             temp = pd.merge(group_feature.min('time_offset'), group_feature.max('time_offset'), on='label')
