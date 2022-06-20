@@ -384,7 +384,8 @@ class PostgresSqlConnector:
 
     def get_special_lab_feature(self, icu_stay_id, start_offset, end_offset, lab_name_list=[]):
         if len(lab_name_list) == 0:
-            return pd.DataFrame(columns=['time_offset', 'label', 'value'])
+            # return pd.DataFrame(columns=['time_offset', 'label', 'value'])
+            lab_name_list = ['pH', 'lactate', 'bicarbonate']
 
         query = """
                 select labresultoffset as time_offset,

@@ -122,10 +122,10 @@ if os.path.exists(output_data_path) is False:
 test_mode = False
 static_feature = False
 dynamic_feature = True
-mult_thread = 1
+mult_thread = 16
 
-start_index = 100
-end_index = 101
+start_index = 0
+end_index = 10000
 
 data_name = 'ards_data'
 if start_index is not None:
