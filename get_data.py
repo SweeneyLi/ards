@@ -114,14 +114,15 @@ static_feature = False
 dynamic_feature = True
 mult_thread = 1
 
-start_index = 250
-end_index = 300
+start_index = 550
+end_index = 600
 
 data_name = 'ards_data'
 if start_index:
     data_name += '_%d_to_%d' % (start_index, end_index)
 
 if __name__ == '__main__':
+    print('from %d to %d' % (start_index, end_index))
     # base_ards_data = base_ards_data.iloc[[7984, 7986], :]
     base_ards_data = pd.read_csv(base_ards_data_path)
     base_ards_data = base_ards_data.iloc[start_index:end_index, :]

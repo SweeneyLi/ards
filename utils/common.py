@@ -190,3 +190,4 @@ def reformat_feature_from_column_to_line(data):
 
 if __name__ == '__main__':
     combine_csvs('../output/ards_data_dynamic', 'valid_ards_data_with_dynamic_feature_0_to_550.csv')
+    print('end')
