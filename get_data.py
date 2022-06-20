@@ -99,13 +99,13 @@ def save_ards_data(base_ards_data, thread_number=0):
         data_name = data_name + '_dynamic'
 
     ards_data.to_csv(os.path.join(output_data_path,
-                                  data_name + '_%d.csv' % thread_number))
+                                  data_name + '_%d.csv' % thread_number), index=False)
     sql_connector.close()
 
 
 base_ards_data_path = './dataset/valid_ards_data_with_base_info.csv'
 output_path = './output'
-output_data_path = './output/ards_data'
+output_data_path = 'output/ards_data_dynamic'
 if os.path.exists(output_data_path) is False:
     os.mkdir(output_data_path)
 

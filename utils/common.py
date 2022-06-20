@@ -72,7 +72,7 @@ def combine_csvs(data_path=None, data_name=None):
     print(df)
     print(df.columns)
 
-    df.to_csv(os.path.join(data_path, data_name))
+    df.to_csv(os.path.join(data_path, data_name), index=False)
 
 
 def reformat_data_from_dataframe_to_dict_and_remove_outlier(df):
@@ -188,4 +188,4 @@ def reformat_feature_from_column_to_line(data):
 
 
 if __name__ == '__main__':
-    combine_csvs('../output/')
+    combine_csvs('../output/ards_data_dynamic', 'valid_ards_data_with_dynamic_feature_0_to_550.csv')
