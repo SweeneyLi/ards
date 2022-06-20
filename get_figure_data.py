@@ -67,8 +67,7 @@ def get_fig4_data():
     ards_data_with_dynamic_feature_path = 'output/ards_data_dynamic/ards_data_100_to_150_dynamic_0.csv'
     ards_data_with_static_feature = pd.read_csv(ards_data_with_static_feature_path)
     print('static', ards_data_with_static_feature.shape)
-    ards_data_with_dynamic_feature = pd.read_csv(ards_data_with_dynamic_feature_path,
-                                                 index_col=0)  # !!! todo::delete it
+    ards_data_with_dynamic_feature = pd.read_csv(ards_data_with_dynamic_feature_path)
     print('dynamic shape', ards_data_with_dynamic_feature.shape)
     ards_data_with_dynamic_feature.drop(columns=['identification_offset'], inplace=True)
     ards_data = pd.merge(ards_data_with_static_feature, ards_data_with_dynamic_feature,
