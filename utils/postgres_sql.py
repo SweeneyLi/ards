@@ -293,10 +293,12 @@ class PostgresSqlConnector:
         """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
         data = self.get_data_by_query(query)
 
+        if data.shape[0] == 0:
+            return pd.DataFrame(columns=['time_offset', 'label', 'value'])
+
         data['label'] = data.apply(
             lambda x: get_nurseCharting_feature(x['typecat'], x['typevallabel'], x['typevalname']), axis=1)
         data = data.loc[:, ['time_offset', 'label', 'value']]
-
         return data
 
     def get_respiratoryCharting_feature(self, icu_stay_id, start_offset, end_offset):
@@ -389,45 +391,12 @@ class PostgresSqlConnector:
                 labname         as label,
                 labresult       as value
                 from lab
-                where 
-                 labresultoffset >= {start_offset}
+                where
+                patientunitstayid={icu_stay_id}
+                and labresultoffset >= {start_offset}
                 and labresultoffset <= {end_offset}
                 and labname in (
-                '-eos',
-                'magnesium',
-                '-basos',
-                'AST (SGOT)',
-                '-bands',
-                'total bilirubin',
-                'calcium',
-                'Total CO2',
-                'creatinine',
-                'paCO2',
-                'potassium',
-                'PTT',
-                'SaO2',
-                'sodium',
-                'WBC x 1000',
-                'glucose',
-                'Hct',
-                'Hgb',
-                'lactate',
-                'ionized calcium',
-                'Magnesium',
-                'paO2',
-                'FiO2',
-                'P/F ratio',
-                'albumin',
-                'platelets x 1000',
-                'bicarbonate',
-                'BUN',
-                'Base Excess',
-                'ALT (SGPT)',
-                'ALP',
-                'pH',
-                'PT - INR',
-                'Basos',
-                'EOs'
+                     
                 )
 
         """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
