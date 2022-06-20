@@ -199,7 +199,7 @@ class PostgresSqlConnector:
                 from lab
                 where 
                 patientunitstayid={icu_stay_id}
-                 labresultoffset >= {start_offset}
+                and labresultoffset >= {start_offset}
                 and labresultoffset <= {end_offset}
                 and labname in (
                 '-eos',
@@ -348,7 +348,7 @@ class PostgresSqlConnector:
                     from vitalperiodic
                     where observationoffset >= {start_offset}
                     and observationoffset <= {end_offset}
-                    and pati±entunitstayid = {icu_stay_id};
+                    and patientunitstayid = {icu_stay_id};
             """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
         return reformat_feature_from_column_to_line(self.get_data_by_query(query))
 
