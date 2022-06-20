@@ -107,7 +107,7 @@ def save_ards_data(base_ards_data, thread_number=0):
                                   data_name + '_%d.csv' % thread_number), index=False)
 
     print('Error list:\n', error_index_list)
-    pd.DataFrame(error_index_list, columns='icu_stay_id').to_csv('error_%d.csv' % thread_number, index=False)
+    pd.DataFrame(error_index_list, columns=['icu_stay_id']).to_csv('error_%d.csv' % thread_number, index=False)
 
     sql_connector.close()
 
