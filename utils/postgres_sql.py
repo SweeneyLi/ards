@@ -178,7 +178,7 @@ class PostgresSqlConnector:
             data.loc[0] = [0 for i in range(10)]
         return data
 
-    @log_time
+    # @log_time
     def get_dynamic_feature(self, icu_stay_id, start_offset, end_offset):
         data = {
             'lab': self.get_lab_feature(icu_stay_id, start_offset, end_offset),
