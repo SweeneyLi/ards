@@ -53,6 +53,7 @@ def log_time(func):
 
 def combine_csvs(data_path=None, data_name=None):
     files = os.listdir(data_path)
+    files = list(filter(lambda x: x.endswith('.csv'), files))
     if len(files) <= 1:
         return
 
