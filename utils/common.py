@@ -62,11 +62,11 @@ def combine_csvs(data_path=None, data_name=None):
         files.remove(data_name)
     print('There are %d files' % len(files))
 
-    df_columns = pd.read_csv(os.path.join(data_path, files[0]), index_col=0).columns
+    df_columns = pd.read_csv(os.path.join(data_path, files[0])).columns
     df = pd.DataFrame(columns=df_columns)
 
     for file_name in files:
-        df2 = pd.read_csv(os.path.join(data_path, file_name), index_col=0)
+        df2 = pd.read_csv(os.path.join(data_path, file_name))
         df = pd.concat([df, df2])
 
     print(df)
