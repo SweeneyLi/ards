@@ -99,12 +99,12 @@ def save_ards_data(base_ards_data, thread_number=0):
             error_index_list.append([icu_stay_id])
 
     if static_feature:
-        data_name = data_name + '_static'
+        current_data_name = data_name + '_static'
     if dynamic_feature:
-        data_name = data_name + '_dynamic'
+        current_data_name = data_name + '_dynamic'
 
     ards_data.to_csv(os.path.join(output_data_path,
-                                  data_name + '_%d.csv' % thread_number), index=False)
+                                  current_data_name + '_%d.csv' % thread_number), index=False)
 
     if len(error_index_list) > 0:
         print('Error list:\n', error_index_list)
@@ -122,13 +122,13 @@ if os.path.exists(output_data_path) is False:
 test_mode = False
 static_feature = False
 dynamic_feature = True
-mult_thread = 8
+mult_thread = 1
 
-start_index = 500
-end_index = 1000
+start_index = 100
+end_index = 101
 
 data_name = 'ards_data'
-if start_index:
+if start_index is not None:
     data_name += '_%d_to_%d' % (start_index, end_index)
 
 if __name__ == '__main__':

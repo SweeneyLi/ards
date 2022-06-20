@@ -382,9 +382,9 @@ class PostgresSqlConnector:
 
         return self.get_data_by_query(query)
 
-    def get_special_lab_feature(self, icu_stay_id, start_offset, end_offset, labname=[]):
-        if len(labname) == 0:
-            return pd.DataFrame()
+    def get_special_lab_feature(self, icu_stay_id, start_offset, end_offset, lab_name_list=[]):
+        if len(lab_name_list) == 0:
+            return pd.DataFrame(columns=['time_offset', 'label', 'value'])
 
         query = """
                 select labresultoffset as time_offset,
@@ -396,14 +396,17 @@ class PostgresSqlConnector:
                 and labresultoffset >= {start_offset}
                 and labresultoffset <= {end_offset}
                 and labname in (
-                     
+                     {lab_name_list}
                 )
-
-        """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset)
+        """.format(icu_stay_id=icu_stay_id, start_offset=start_offset, end_offset=end_offset,
+                   lab_name_list="'" + "','".join(lab_name_list) + "'")
         data = self.get_data_by_query(query)
-        data['label'].replace('-bands', 'bands', inplace=True)
-        data['label'].replace('-basos', 'basos', inplace=True)
-        data['label'].replace('-eos', 'eos', inplace=True)
+        if 'bands' in lab_name_list:
+            data['label'].replace('-bands', 'bands', inplace=True)
+        if 'basos' in lab_name_list:
+            data['label'].replace('-basos', 'basos', inplace=True)
+        if 'eos' in lab_name_list:
+            data['label'].replace('-eos', 'eos', inplace=True)
         return data
 
 
