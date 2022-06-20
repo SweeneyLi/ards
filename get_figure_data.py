@@ -1,5 +1,5 @@
 import os
-
+import numpy as np
 import pandas as pd
 
 output_path = './output'
@@ -47,9 +47,14 @@ def get_fig3_data():
         lambda x: x / 1440)
     ards_data_with_static_feature['hospital_los'] = ards_data_with_static_feature.apply(
         lambda x: (x['hospitaldischargeoffset'] - x['hospitaladmitoffset']) / 1440, axis=1)
+    ards_data_with_static_feature['ards_severity'] = ards_data_with_static_feature['pf_8h_min'].map(
+        lambda x: {0: 'Severe', 1: 'Moderate', 2: 'Mild'}.get(np.floor(x)) if x else None)
+    ards_data_with_static_feature['age'] = ards_data_with_static_feature['age'].replace('> 89', '90')
+    ards_data_with_static_feature['age'] = ards_data_with_static_feature['age'].astype('int', errors='ignore')
     # save data
     ards_data_with_static_feature = ards_data_with_static_feature.loc[:,
-                                    ['ards_group', 'pf_8h_min', 'hospital_dead_status', '28d_death_status',
+                                    ['icu_stay_id', 'ards_group', 'ards_severity', 'hospital_dead_status',
+                                     '28d_death_status',
                                      'icu_death_status', 'age', 'apachescore', 'hospital_los',
                                      'icu_los', 'admission_diagnosis']
                                     ]
@@ -96,6 +101,7 @@ def get_fig4_data():
         ards_data['diagnose_' + diagnose] = ards_data['admission_diagnosis'].map(lambda x: x == diagnose)
     ards_data.drop(columns=['admission_diagnosis'], inplace=True)
     ards_data.to_csv(output_data_path, index=False)
+
 
 if __name__ == '__main__':
     get_fig3_data()
