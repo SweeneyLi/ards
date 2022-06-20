@@ -103,7 +103,7 @@ def save_ards_data(base_ards_data, thread_number=0):
     sql_connector.close()
 
 
-base_ards_data_path = './dataset/valid_ards_data_with_base_info.csv'
+base_ards_data_path = 'dataset/ards_data/valid_ards_data_with_base_info.csv'
 output_path = './output'
 output_data_path = 'output/ards_data_dynamic'
 if os.path.exists(output_data_path) is False:

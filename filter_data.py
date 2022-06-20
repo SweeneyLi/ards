@@ -73,8 +73,8 @@ def save_valid_id_and_identification_offset(ards_data_id_list, thread_number=0):
 
 
 def second_filter_data():
-    base_ards_ids_path = 'dataset/ards_data_with_base_info.csv'
-    valid_base_ards_ids_path = 'dataset/valid_ards_data_with_base_info.csv'
+    base_ards_ids_path = 'dataset/ards_data/ards_data_with_base_info.csv'
+    valid_base_ards_ids_path = 'dataset/ards_data/valid_ards_data_with_base_info.csv'
     base_ards_data = pd.read_csv(base_ards_ids_path)
 
     sql_connector = PostgresSqlConnector()

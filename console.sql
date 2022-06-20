@@ -129,7 +129,9 @@ select gender,
        unitdischargestatus,
        hospitaldischargeoffset,
        hospitaldischargestatus
-from patient;
+from patient
+where ;
+
 
 -- from apachepatientresult
 select patientunitstayid, apachescore

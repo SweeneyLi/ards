@@ -33,7 +33,7 @@ def change_admission_diagnosis(diagnosis):
 def get_fig3_data():
     output_data_path = os.path.join(output_path, 'fig3_data.csv')
     # get static feature
-    ards_data_with_static_feature_path = 'dataset/valid_ards_data_with_static_feature.csv'
+    ards_data_with_static_feature_path = 'dataset/ards_data/valid_ards_data_with_static_feature.csv'
     ards_data_with_static_feature = pd.read_csv(ards_data_with_static_feature_path)
     # reformat feature
     ards_data_with_static_feature['admission_diagnosis'] = ards_data_with_static_feature['admission_diagnosis'].map(
@@ -50,7 +50,7 @@ def get_fig3_data():
     # save data
     ards_data_with_static_feature = ards_data_with_static_feature.loc[:,
                                     ['ards_group', 'pf_8h_min', 'hospital_dead_status', '28d_death_status',
-                                     'icu_death_status', 'age', 'apache_score', 'hospital_los',
+                                     'icu_death_status', 'age', 'apachescore', 'hospital_los',
                                      'icu_los', 'admission_diagnosis']
                                     ]
     ards_data_with_static_feature.to_csv(output_data_path, index=False)
@@ -62,7 +62,7 @@ def get_fig4_data():
     output_data_path = os.path.join(output_path, 'fig4_data.csv')
 
     # get data
-    ards_data_with_static_feature_path = 'dataset/valid_ards_data_with_static_feature.csv'
+    ards_data_with_static_feature_path = 'dataset/ards_data/valid_ards_data_with_static_feature.csv'
     # ards_data_with_dynamic_feature_path = 'dataset/valid_ards_data_with_dynamic_feature.csv'
     ards_data_with_dynamic_feature_path = 'output/ards_data_dynamic/ards_data_100_to_150_dynamic_0.csv'
     ards_data_with_static_feature = pd.read_csv(ards_data_with_static_feature_path)
@@ -96,3 +96,6 @@ def get_fig4_data():
         ards_data['diagnose_' + diagnose] = ards_data['admission_diagnosis'].map(lambda x: x == diagnose)
     ards_data.drop(columns=['admission_diagnosis'], inplace=True)
     ards_data.to_csv(output_data_path, index=False)
+
+if __name__ == '__main__':
+    get_fig3_data()
