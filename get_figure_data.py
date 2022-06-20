@@ -82,8 +82,8 @@ def get_fig4_data():
     ards_data['BMI'] = ards_data.apply(
         lambda x: x['admissionweight'] / (x['admissionheight'] * x['admissionheight'] * 0.01) if x[
             'admissionheight'] else None, axis=1)
-    ards_data['age'] = ards_data['age'].replace('>89', '90')
-    ards_data['age'] = ards_data['age'].astype('int')
+    ards_data_with_static_feature['age'] = ards_data_with_static_feature['age'].replace('> 89', '90')
+    ards_data_with_static_feature['age'] = ards_data_with_static_feature['age'].astype('int', errors='ignore')
 
     ards_data = ards_data.loc[: column_list]
 
