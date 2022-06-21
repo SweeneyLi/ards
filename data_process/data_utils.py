@@ -1,6 +1,6 @@
 import pandas as pd
 
-from data_process.common import is_number
+from data_process.common_utils import is_number
 from data_process.data_validator import SectionValidator
 
 __all__ = [
