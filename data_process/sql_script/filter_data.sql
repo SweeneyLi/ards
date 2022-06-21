@@ -1,3 +1,5 @@
+SET search_path to public, eicu_crd;
+
 /* 153055 having respiratory failure(ICD-9:518.81, 518.83, 518.84) */
 select count(d.patientunitstayid)
 from diagnosis as d
@@ -90,3 +92,14 @@ from (select d.patientunitstayid
                  and CAST(respchartvalue as DECIMAL) <= 60
              GROUP BY p.patientunitstayid
              order by res_min_peep) as respiratorycharting_peep)) as temp;
+
+select distinct uniquepid from
+(select ards_data.patientunitstayid as icu_stay_id,
+       uniquepid,
+       unitdischargeoffset,
+       unitdischargestatus,
+       hospitaldischargeoffset,
+       hospitaldischargestatus
+from ards_data
+         left join patient p on ards_data.patientunitstayid = p.patientunitstayid
+where not(unitdischargestatus = '' or (unitdischargestatus = 'Alive' and hospitaldischargestatus = ''))) as temp;
