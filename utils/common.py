@@ -4,7 +4,8 @@ import numpy as np
 from utils.data_validator import SectionValidator
 
 __all__ = ['log_time', 'convert_number', 'is_number', 'combine_csvs', 'generate_pf_list', 'get_continuous_offset',
-           'reformat_data_from_dataframe_to_dict_and_remove_outlier', 'reformat_feature_from_column_to_line']
+           'reformat_data_from_dataframe_to_dict_and_remove_outlier', 'reformat_feature_from_column_to_line',
+           'change_dataframe_bool_and_round']
 
 
 def convert_number(value):
@@ -186,6 +187,21 @@ def reformat_feature_from_column_to_line(data):
             if row[l]:
                 new_data = new_data.append({'time_offset': offset, 'label': l, 'value': row[l]}, ignore_index=True)
     return new_data
+
+
+def change_dataframe_bool_and_round(df, round_number=2):
+    df = df.round(round_number)
+
+    df.replace('TRUE', 1, inplace=True)
+    df.replace('FALSE', 0, inplace=True)
+    df.replace('True', 1, inplace=True)
+    df.replace('False', 0, inplace=True)
+
+    for col in df.columns:
+        if df[col].dtype == bool:
+            df[col] = df[col].astype('int')
+
+    return df
 
 
 if __name__ == '__main__':
