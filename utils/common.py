@@ -123,7 +123,8 @@ def generate_pf_list(pao2_dict, fio2_dict):
             f_index += 1
         last_p_v = pao2_list[p_index - 1][1]
         last_f_v = fio2_list[f_index - 1][1]
-        pf_list.append([time_value, last_p_v / last_f_v])
+        # The unit of fio2 is percentage.
+        pf_list.append([time_value, last_p_v / (last_f_v / 100)])
         # print('%d: %f / %f = %f' % (time_value, last_p_v, last_f_v, last_p_v / last_f_v))
 
     return pf_list
@@ -131,10 +132,10 @@ def generate_pf_list(pao2_dict, fio2_dict):
 
 assert generate_pf_list(
     {0: 300, 1: 300, 10: 200, 15: 100},
-    {5: 10, 20: 5}
+    {5: 100, 20: 50}
     # [[0, 300], [1, 300], [10, 200], [15, 100]],
     # [[5, 10], [20, 5]]
-) == [[5, 30.0], [10, 20.0], [15, 10.0], [20, 20.0]]
+) == [[5, 300], [10, 200], [15, 100], [20, 200]]
 
 
 def get_continuous_offset(continue_offset, section_type, points):

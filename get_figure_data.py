@@ -64,7 +64,7 @@ def get_fig3_data():
         lambda x: (x['hospitaldischargeoffset'] - x['hospitaladmitoffset']) / 1440, axis=1)
 
     ards_data_with_static_feature['ards_severity'] = ards_data_with_static_feature['pf_8h_min'].map(
-        lambda x: {0: 'Severe', 1: 'Moderate', 2: 'Mild'}.get(np.floor(x)) if x else None)
+        lambda x: {0: 'Severe', 100: 'Moderate', 200: 'Mild'}.get(np.floor(min(x, 299))) if x else None)
 
     ards_data_with_static_feature['age'] = ards_data_with_static_feature['age'].replace('> 89', '90')
     ards_data_with_static_feature['age'] = ards_data_with_static_feature['age'].astype('int', errors='ignore')
