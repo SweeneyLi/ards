@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from utils.common import change_dataframe_bool_and_round
+from utils.data_utils import change_dataframe_bool_and_round
 
 output_path = './output'
 indicator_feature_list = [
