@@ -1,8 +1,8 @@
 import pandas as pd
 import psycopg2
-from utils.init_config import db_config
-from utils.common import log_time
-from utils.data_utils import reformat_feature_from_column_to_line
+from data_process.init_config import db_config
+from data_process.common import log_time
+from data_process.data_utils import reformat_feature_from_column_to_line
 
 __all__ = ['PostgresSqlConnector']
 

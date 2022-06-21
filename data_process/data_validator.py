@@ -1,4 +1,4 @@
-from utils.init_config import dynamic_range_dict
+from data_process.init_config import dynamic_range_dict
 
 __all__ = ['SectionValidator']
 

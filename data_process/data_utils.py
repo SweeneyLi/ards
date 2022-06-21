@@ -1,7 +1,7 @@
 import pandas as pd
 
-from utils.common import is_number
-from utils.data_validator import SectionValidator
+from data_process.common import is_number
+from data_process.data_validator import SectionValidator
 
 __all__ = [
     'reformat_data_from_dataframe_to_dict_and_remove_outlier', 'generate_pf_list', 'get_continuous_offset',

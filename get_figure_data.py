@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from utils.data_utils import change_dataframe_bool_and_round
+from data_process.data_utils import change_dataframe_bool_and_round
 
 output_path = './output'
 indicator_feature_list = [
@@ -81,7 +81,7 @@ def get_fig3_data():
 
 
 def get_fig4_data():
-    from utils.init_config import diagnoses_dict, dynamic_feature_name_list
+    from data_process.init_config import diagnoses_dict, dynamic_feature_name_list
     column_list = ['ards_group'] + ['gender', 'age', 'admission_diagnosis', 'BMI',
                                     'apachescore'] + indicator_feature_list + dynamic_feature_name_list
     output_data_path = os.path.join(output_path, 'fig4_data.csv')
@@ -131,7 +131,7 @@ def get_lab_feature(lab_feature_list=None):
     global output_path
     output_lab_data_path = os.path.join(output_path, 'fig5_lab_data.csv')
 
-    from utils.postgres_sql import PostgresSqlConnector
+    from data_process.postgres_sql import PostgresSqlConnector
     sql_connector = PostgresSqlConnector()
     offset_24h = 24 * 60
     ards_data_static_feature_path = 'dataset/ards_data/valid_ards_data_with_static_feature.csv'

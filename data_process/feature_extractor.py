@@ -2,10 +2,10 @@ import json
 import operator
 import pandas as pd
 import numpy as np
-from utils.data_validator import SectionValidator
-from utils.common import *
-from utils.init_config import diagnoses_dict, dynamic_feature_name_list
-from utils.postgres_sql import PostgresSqlConnector
+from data_process.data_validator import SectionValidator
+from data_process.common import *
+from data_process.init_config import diagnoses_dict, dynamic_feature_name_list
+from data_process.postgres_sql import PostgresSqlConnector
 import operator
 
 __all__ = ['FeatureExtractor']

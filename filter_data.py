@@ -1,8 +1,8 @@
 import pandas as pd
 
-from utils.postgres_sql import PostgresSqlConnector
-from utils.feature_extractor import FeatureExtractor
-from utils.data_utils import reformat_data_from_dataframe_to_dict_and_remove_outlier
+from data_process.postgres_sql import PostgresSqlConnector
+from data_process.feature_extractor import FeatureExtractor
+from data_process.data_utils import reformat_data_from_dataframe_to_dict_and_remove_outlier
 from tqdm import tqdm
 import datetime
 import os
