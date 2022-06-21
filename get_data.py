@@ -98,6 +98,7 @@ def save_ards_data(base_ards_data, thread_number=0):
             print('Error!!! icu_stay_id: %d' % icu_stay_id)
             error_index_list.append([icu_stay_id])
 
+    current_data_name = data_name
     if static_feature:
         current_data_name = data_name + '_static'
     if dynamic_feature:
