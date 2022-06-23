@@ -1,7 +1,37 @@
 # Utilizing machine learning to improve clinical trial design for acute respiratory distress syndrome
-> data label: long_stay/rapid_death/spontaneous_recovery
+This is my data scripts of "[Utilizing machine learning to improve clinical trial design for acute respiratory distress syndrome](https://www.nature.com/articles/s41746-021-00505-5)" .
 
-## Figure
+## Development Environment 
+
+python3.7
+
+specific python packages see the requirments.txt
+
+## Dataset Source
+
+[The eICU Collaborative Research Database, a freely available multi-center database for critical care research](https://www.nature.com/articles/sdata2018178)
+
+## File Structure
+
+1. config--config of database and data structure
+2. data_process--base script of data processing
+3. dataset--result of data process
+4. static--static source of this script
+5. filter_data.py--the script to filter data by select criterion of paper
+6. get_data.py--the script to get data feature by select criterion of paper
+
+## Use Procedure
+
+You should download the origin dataset and load in postgres database firstly.
+
+1. install python packages in the requirment.txt
+2. change the db config in foler of config
+3. change the output path in filter.py and run "python filter_data.py"
+4. change the relate config in get_data.py and run "python get_data.py"
+5. change the output path in get_figure_data.py and run "python get_figure_data.py"
+
+## Figure Data Structure
+
 ### Figure 3
 ![](https://github.com/SweeneyLi/ards/raw/master/static/img/fig3.png)
 
